@@ -1,0 +1,15 @@
+@1=~Paladin~
+@2=~Cavalier~
+@3=~Inquisitor~
+@4=~Undead Hunter~
+@5=~Wyrmslayer~
+@6=~Purifier~
+
+@10=~Sacred Vow~
+@11=~Sacred Vow
+
+The Paladin proclaims <PRO_HISHER> devotion to a god aligned with <PRO_HISHER> righteous path, and is granted the blessing to drawn divine magic from <PRO_HISHER> deity. This vow of ultimate service renounces the further advancement as a Paladin.
+
+WARNING: This vow cannot be revoked! The character will not be recognized as a Paladin anymore, even if not dual-classing. After use the dual-class shall be initiated manually by the normal process. The Paladin will require 15 Strength and 15 Charisma in addition to 17 Wisdom for becoming a Cleric.
+
+DISCLAIMER: The character sheet will show the Cleric and Paladin class, as would be expected. However, the combined class will be set to Cleric/Ranger after dual-classing. This is a hard-coded engine limitation. It remains but a cosmetic issue when dual-classed immediately. Expect aberrant behavior if continuing as the pseudo single class. ~

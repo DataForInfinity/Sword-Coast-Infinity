@@ -1,0 +1,89 @@
+BACKUP ~weidu_external/backup/SCI-Dualadins~
+AUTHOR ~AvA (www.forum.com)~
+AUTO_EVAL_STRINGS
+
+VERSION ~v1.0~
+
+ALWAYS
+    INCLUDE ~%MOD_FOLDER%/lib/a7#add_kit_ex.tpa~
+END
+
+LANGUAGE
+    ~English~
+    ~english~
+    "SCI-Dualadins/lang/english/SCI-DP-setup.tra"
+LANGUAGE
+    ~Deutsch~
+    ~german~
+    "SCI-Dualadins/lang/german/SCI-DP-setup.tra"
+
+BEGIN @100 DESIGNATED 100//Base-class Paladin can dual-class to Cleric [hack]
+LABEL ~V1_PALADIN_CAN_DUAL~
+REQUIRE_PREDICATE (GAME_IS ~BGEE BG2EE IWDEE EET~) ~Skipping: Only EE Games Supported~
+
+//Let's get messy
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PD-setup.tra"
+    BEGIN//WITH_TRA
+
+        //Create files for dual-classing
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAPDC.cre~ ~override~
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAPDC.eff~ ~override~
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAPDC.spl~ ~override~
+            SAY NAME1 @10
+            SAY UNIDENTIFIED_DESC @11
+        BUT_ONLY
+
+        //Patch class abilities on dual-classing
+        COPY_EXISTING ~CLABPA01.2DA~ ~override/CLABPP01.2DA~
+        REPLACE_EVALUATE "\(GA_\|AP_\)\(.......\)" BEGIN
+            INNER_ACTION BEGIN
+                COPY_EXISTING ~override/V1IAPDC.spl~ ~override~
+                    LPF ADD_SPELL_EFFECT INT_VAR opcode = 172 target = 1 timing = 9 STR_VAR resource = ~%MATCH2%~ END
+            END
+        END ~%MATCH0%~
+
+        LAF ADD_KIT_EX
+            INT_VAR
+                kit_class   = 12 // Ranger
+                visible     = 0 // Character creation
+                mixed       = RESOLVE_STR_REF (@1)
+                //descstr     = 9558 // Paladin
+                //clastext.2da
+                //V1_PseudoPaladin     12                   44                   7217                 25207                64018                -1                   0                    102509               19620
+                //PALADIN              6                    16384                7217                 9558                 1078                 -1                   0                    102509               19620
+                //kitlist.2da
+                //44               V1_PseudoPaladin 7217             64018            25207            CLABPP01         65               0x00000010       12               0x0000402C
+                briefdesc   = 102509 // Paladin
+                fallen_notice=19620 // Paladin
+            STR_VAR
+                source_kit  = ~INQUISITOR~
+                kit_name    = ~V1_PseudoPaladin~
+                clab_path   = ~CLABPP01.2DA~
+                dualclas    = ~V1_PseudoPaladin 0 1 0 0 0 0~
+            RET
+                kit_id
+        END //LFA
+
+        //Grant Paladin dual-class ability at level 2
+        APPEND "CLABPA01.2DA" ~DUALCLASS   ****        GA_V1IAPDC  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1IAPDC~
+        COMPILE ~%MOD_FOLDER%/data/V1IAPDC.baf~ ~override~
+
+        //Fix Paladin kit description
+        COPY_EXISTING ~CLASTEXT.2da~ ~override/CLASTEXT.2da~
+        REPLACE_EVALUATE "\(V1_PseudoPaladin.*\)\(25207\)" BEGIN
+            SPRINT result ~%MATCH1%~^~9558 ~
+            INNER_ACTION BEGIN
+                COPY_EXISTING ~kitlist.2da~ ~override/kitlist.2da~
+                    REPLACE_TEXTUALLY "25207            CLABPP01" "9558             CLABPP01"
+            END
+        END ~%result%~
+        
+    END//WITH_TRA
+/*
+BEGIN @200 DESIGNATED 200//All standard Paladin kits can dual-class to Cleric [hack]
+LABEL ~V1_PALADIN_KIT_DUAL~
+REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 100 @201
+*/

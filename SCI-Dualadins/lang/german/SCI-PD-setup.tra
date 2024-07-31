@@ -1,0 +1,15 @@
+@1=~Paladin~
+@2=~Chevalier~
+@3=~Inquisitor~
+@4=~Geisterjäger~
+@5=~Drachentöter~
+@6=~Läuterer~
+
+@10=~Heiliges Gelübde~
+@11=~Heiliges Gelübde
+
+Der Paladin schwört <PRO_HISHER> Hingabe einer Gottheit, die <PRO_HISHER> Pfad der Rechtschaffenheit teilt, und erhält ihren Segen, durch sie hindurch göttliche Magie <PRO_HISHER> zu wirken. Mit diesem Gelübde <PRO_HISHER> absoluten Ergebenheit widerruft <PRO_HESHE> <PRO_HISHER> weitere Entwicklung als Paladin.
+
+WARNUNG: Dieses Gelübde kann nicht widerrufen werden! Der Charakter wird nicht mehr als Paladin erkannt, selbst wenn keine Klassenkombination durchgeführt wird. Die Klassenkombination muss selbst über den üblichen Weg durchgeführt werden. Der Paladin benötigt dazu 15 Stärke und 15 Charisma zusätzlich zu 17 Weisheit, um ein Kleriker zu werden.
+
+HINWEIS: Im Charakterbogen werden die Kleriker- und Paladinklasse richtig angezeigt. Allerdings wird die Klassenkombination aufgrund einer hartcodierten Begrenzung der Spielengine auf Kleriker/Waldläufer gesetzt. Sofern man die Klassenkombination umgehend durchführt, bleibt es bei diesem kosmetischen Problem. Sollte man die Pseudopaladinklasse weiterspielen, muss man mit anormalem Verhalten rechnen.~
