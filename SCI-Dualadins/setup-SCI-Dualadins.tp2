@@ -1,8 +1,8 @@
 BACKUP ~weidu_external/backup/SCI-Dualadins~
-AUTHOR ~AvA (www.forum.com)~
+AUTHOR ~AvA (https://www.nexusmods.com/baldursgate/mods/75)~
 AUTO_EVAL_STRINGS
 
-VERSION ~v1.0~
+VERSION ~v2.0~
 
 ALWAYS
     INCLUDE ~%MOD_FOLDER%/lib/a7#add_kit_ex.tpa~
@@ -18,7 +18,7 @@ LANGUAGE
     "SCI-Dualadins/lang/german/SCI-DP-setup.tra"
 
 BEGIN @100 DESIGNATED 100//Base-class Paladin can dual-class to Cleric [hack]
-LABEL ~V1_PALADIN_CAN_DUAL~
+LABEL V1_PALADIN_CAN_DUAL
 REQUIRE_PREDICATE (GAME_IS ~BGEE BG2EE IWDEE EET~) ~Skipping: Only EE Games Supported~
 
 //Let's get messy
@@ -27,63 +27,762 @@ REQUIRE_PREDICATE (GAME_IS ~BGEE BG2EE IWDEE EET~) ~Skipping: Only EE Games Supp
         "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PD-setup.tra"
     BEGIN//WITH_TRA
 
-        //Create files for dual-classing
-        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAPDC.cre~ ~override~
-        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAPDC.eff~ ~override~
-        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAPDC.spl~ ~override~
-            SAY NAME1 @10
-            SAY UNIDENTIFIED_DESC @11
+        //Create generic files for dual-classing
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IA_DC.cre~ ~override~
+            SAY NAME1 @0
+            SAY NAME2 @0
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IA_DC.spl~ ~override~
+            SAY NAME1 @11
+            SAY UNIDENTIFIED_DESC @12
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAXDC.spl~ ~override~
+
+        //Create class abilities for pseudo kit and prevent duplication on dual-classing
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAXDC.spl~ ~override/V1IAPDC.spl~
+        COPY_EXISTING ~CLABPA01.2DA~ ~override/CLABPP01.2DA~
+            REPLACE_EVALUATE "\(GA_\|AP_\)\(.......\)" BEGIN
+                INNER_ACTION BEGIN
+                    COPY_EXISTING ~V1IAPDC.spl~ ~override~
+                        LPF ADD_SPELL_EFFECT INT_VAR opcode = 172 target = 2 timing = 9 STR_VAR resource = ~%MATCH2%~ END
+                END
+            END ~%MATCH0%~
+        //Give Paladin dual-class ability at level 2
+        APPEND "CLABPA01.2DA" ~DUALCLASS   ****        GA_V1IA_DC  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1IA_DC~
+
+        //Get Paladin class information
+        COPY_EXISTING ~CLASTEXT.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                PATCH_IF ~%class%~ STRING_EQUAL_CASE ~PALADIN~ BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 4 ~Description~
+                    READ_2DA_ENTRY_FORMER rows row 8 ~BriefDescription~
+                    READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                END
+            END
         BUT_ONLY
 
-        //Patch class abilities on dual-classing
-        COPY_EXISTING ~CLABPA01.2DA~ ~override/CLABPP01.2DA~
-        REPLACE_EVALUATE "\(GA_\|AP_\)\(.......\)" BEGIN
-            INNER_ACTION BEGIN
-                COPY_EXISTING ~override/V1IAPDC.spl~ ~override~
-                    LPF ADD_SPELL_EFFECT INT_VAR opcode = 172 target = 1 timing = 9 STR_VAR resource = ~%MATCH2%~ END
+        //Add a note on dual-classing to the Paladin description
+        ACTION_GET_STRREF %Description% ~help~
+        OUTER_SPRINT extension @10
+        ACTION_IF INDEX (~%extension%~ ~%help%~)<0 BEGIN
+            OUTER_PATCH_SAVE help ~%help%~ BEGIN
+                SPRINT search @9
+                REPLACE_EVALUATE ~%search%~ BEGIN
+                    SPRINT result ~%MATCH0%~^~%extension%~
+                END ~%result%~
             END
-        END ~%MATCH0%~
+        END
 
+        //Update standard description
+        OUTER_SPRINT extension @8
+        ACTION_IF INDEX (~%extension%~ ~%help%~)<0 BEGIN
+            STRING_SET_EVALUATE %Description% ~%help%~^~%extension%~
+        END
+
+        //Create pseudo Paladin as Ranger kit
         LAF ADD_KIT_EX
             INT_VAR
                 kit_class   = 12 // Ranger
                 visible     = 0 // Character creation
                 mixed       = RESOLVE_STR_REF (@1)
-                //descstr     = 9558 // Paladin
-                //clastext.2da
-                //V1_PseudoPaladin     12                   44                   7217                 25207                64018                -1                   0                    102509               19620
-                //PALADIN              6                    16384                7217                 9558                 1078                 -1                   0                    102509               19620
-                //kitlist.2da
-                //44               V1_PseudoPaladin 7217             64018            25207            CLABPP01         65               0x00000010       12               0x0000402C
-                briefdesc   = 102509 // Paladin
-                fallen_notice=19620 // Paladin
+                help        = %Description%
+                briefdesc   = ~%BriefDescription%~
+                fallen_notice=~%FallenNotice%~
             STR_VAR
                 source_kit  = ~INQUISITOR~
-                kit_name    = ~V1_PseudoPaladin~
                 clab_path   = ~CLABPP01.2DA~
+                kit_name    = ~V1_PseudoPaladin~
                 dualclas    = ~V1_PseudoPaladin 0 1 0 0 0 0~
+                abdcdsrq    = ~V1_PseudoPaladin 17 0 0 0 0 99~ //Prevents dual-classing into pseudo kit
+                unusable    = ~0x00004000 ~ //No kit specific usability restrictions
+            RET
+                kit_id
+        END
+
+        //Add selection dialog to take solemn vow
+        COMPILE ~%MOD_FOLDER%/data/V1IA_DC.baf~ ~override~
+        COMPILE ~%MOD_FOLDER%/data/V1IA_DC.d~ ~override~
+
+    END//WITH_TRA
+
+BEGIN @150 DESIGNATED 150//All standard Paladin kits can dual-class to Cleric [hack]
+LABEL V1_PALADIN_KIT_CAN_DUAL
+REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 100 @150100
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PD-setup.tra"
+    BEGIN//WITH_TRA
+
+        //Starting with Cavalier
+
+        //Create class abilities for pseudo kit and prevent duplication on dual-classing
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAXDC.spl~ ~override/V1IACDC.spl~
+        COPY_EXISTING ~CLABPA02.2DA~ ~override/CLABPP02.2DA~
+            REPLACE_EVALUATE "\(GA_\|AP_\)\(.......\)" BEGIN
+                INNER_ACTION BEGIN
+                    COPY_EXISTING ~V1IACDC.spl~ ~override~
+                        LPF ADD_SPELL_EFFECT INT_VAR opcode = 172 target = 2 timing = 9 STR_VAR resource = ~%MATCH2%~ END
+                END
+            END ~%MATCH0%~
+        //Give Cavalier dual-class ability at level 2
+        APPEND "CLABPA02.2DA" ~DUALCLASS   ****        GA_V1IA_DC  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1IA_DC~
+
+        //Get Cavalier class information
+        COPY_EXISTING ~CLASTEXT.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                PATCH_IF ~%class%~ STRING_EQUAL_CASE ~CAVALIER~ BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 4 ~Description~
+                    READ_2DA_ENTRY_FORMER rows row 8 ~BriefDescription~
+                    READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                END
+            END
+        BUT_ONLY
+
+        //For obscure reasons mod "DUAL_TO_KIT" v0.35 will not work on pseudo kits sharing the same description as a true Paladin kit
+        ACTION_GET_STRREF %Description% ~help~
+        //Generate fail safe new help index to patch "DUAL_TO_KIT" v0.35 compatibility
+        OUTER_SET PseudoHelp = RESOLVE_STR_REF (~%help%~^~ ~)
+
+        //Create pseudo Cavalier as Ranger kit
+        LAF ADD_KIT_EX
+            INT_VAR
+                kit_class   = 12 // Ranger
+                visible     = 0 // Character creation
+                mixed       = RESOLVE_STR_REF (@2)
+                help        = %PseudoHelp%
+                briefdesc   = ~%BriefDescription%~
+                fallen_notice=~%FallenNotice%~
+            STR_VAR
+                source_kit  = ~CAVALIER~
+                kit_name    = ~V1_PseudoCavalier~
+                clab_path   = ~CLABPP02.2DA~
+                dualclas    = ~V1_PseudoCavalier 0 1 0 0 0 0~
+                abdcdsrq    = ~V1_PseudoCavalier 17 0 0 0 0 99~ //Prevents dual-classing into pseudo kit
             RET
                 kit_id
         END //LFA
 
-        //Grant Paladin dual-class ability at level 2
-        APPEND "CLABPA01.2DA" ~DUALCLASS   ****        GA_V1IAPDC  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
-        UNLESS ~V1IAPDC~
-        COMPILE ~%MOD_FOLDER%/data/V1IAPDC.baf~ ~override~
+        //Starting with Inquisitor
 
-        //Fix Paladin kit description
-        COPY_EXISTING ~CLASTEXT.2da~ ~override/CLASTEXT.2da~
-        REPLACE_EVALUATE "\(V1_PseudoPaladin.*\)\(25207\)" BEGIN
-            SPRINT result ~%MATCH1%~^~9558 ~
-            INNER_ACTION BEGIN
-                COPY_EXISTING ~kitlist.2da~ ~override/kitlist.2da~
-                    REPLACE_TEXTUALLY "25207            CLABPP01" "9558             CLABPP01"
+        //Create class abilities for pseudo kit and prevent duplication on dual-classing
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAXDC.spl~ ~override/V1IAIDC.spl~
+        COPY_EXISTING ~CLABPA03.2DA~ ~override/CLABPP03.2DA~
+            REPLACE_EVALUATE "\(GA_\|AP_\)\(.......\)" BEGIN
+                INNER_ACTION BEGIN
+                    COPY_EXISTING ~V1IAIDC.spl~ ~override~
+                        LPF ADD_SPELL_EFFECT INT_VAR opcode = 172 target = 2 timing = 9 STR_VAR resource = ~%MATCH2%~ END
+                END
+            END ~%MATCH0%~
+        //Give Inquisitor dual-class ability at level 2
+        APPEND "CLABPA03.2DA" ~DUALCLASS   ****        GA_V1IA_DC  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1IA_DC~
+
+        //Get Inquisitor class information
+        COPY_EXISTING ~CLASTEXT.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                PATCH_IF ~%class%~ STRING_EQUAL_CASE ~INQUISITOR~ BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 4 ~Description~
+                    READ_2DA_ENTRY_FORMER rows row 8 ~BriefDescription~
+                    READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                END
             END
-        END ~%result%~
+        BUT_ONLY
+
+        //For obscure reasons mod "DUAL_TO_KIT" v0.35 will not work on pseudo kits sharing the same description as a true Paladin kit
+        ACTION_GET_STRREF %Description% ~help~
+        //Generate fail safe new help index to patch "DUAL_TO_KIT" v0.35 compatibility
+        OUTER_SET PseudoHelp = RESOLVE_STR_REF (~%help%~^~ ~)
+
+        //Create pseudo Inquisitor as Ranger kit
+        LAF ADD_KIT_EX
+            INT_VAR
+                kit_class   = 12 // Ranger
+                visible     = 0 // Character creation
+                mixed       = RESOLVE_STR_REF (@3)
+                help        = %PseudoHelp%
+                briefdesc   = ~%BriefDescription%~
+                fallen_notice=~%FallenNotice%~
+            STR_VAR
+                source_kit  = ~INQUISITOR~
+                kit_name    = ~V1_PseudoInquisitor~
+                clab_path   = ~CLABPP03.2DA~
+                dualclas    = ~V1_PseudoInquisitor 0 1 0 0 0 0~
+                abdcdsrq    = ~V1_PseudoInquisitor 17 0 0 0 0 99~ //Prevents dual-classing into pseudo kit
+            RET
+                kit_id
+        END //LFA
+
+        //Starting with Undead Hunter
+
+        //Create class abilities for pseudo kit and prevent duplication on dual-classing
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAXDC.spl~ ~override/V1IAUDC.spl~
+        COPY_EXISTING ~CLABPA04.2DA~ ~override/CLABPP04.2DA~
+            REPLACE_EVALUATE "\(GA_\|AP_\)\(.......\)" BEGIN
+                INNER_ACTION BEGIN
+                    COPY_EXISTING ~V1IAUDC.spl~ ~override~
+                        LPF ADD_SPELL_EFFECT INT_VAR opcode = 172 target = 2 timing = 9 STR_VAR resource = ~%MATCH2%~ END
+                END
+            END ~%MATCH0%~
+        //Give Undead Hunter dual-class ability at level 2
+        APPEND "CLABPA04.2DA" ~DUALCLASS   ****        GA_V1IA_DC  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1IA_DC~
+
+        //Get Undead Hunter  class information
+        COPY_EXISTING ~CLASTEXT.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                PATCH_IF ~%class%~ STRING_EQUAL_CASE ~UNDEAD_HUNTER~ BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 4 ~Description~
+                    READ_2DA_ENTRY_FORMER rows row 8 ~BriefDescription~
+                    READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                END
+            END
+        BUT_ONLY
+
+        //For obscure reasons mod "DUAL_TO_KIT" v0.35 will not work on pseudo kits sharing the same description as a true Paladin kit
+        ACTION_GET_STRREF %Description% ~help~
+        //Generate fail safe new help index to patch "DUAL_TO_KIT" v0.35 compatibility
+        OUTER_SET PseudoHelp = RESOLVE_STR_REF (~%help%~^~ ~)
+
+        //Create pseudo Undead Hunter as Ranger kit
+        LAF ADD_KIT_EX
+            INT_VAR
+                kit_class   = 12 // Ranger
+                visible     = 0 // Character creation
+                mixed       = RESOLVE_STR_REF (@4)
+                help        = %PseudoHelp%
+                briefdesc   = ~%BriefDescription%~
+                fallen_notice=~%FallenNotice%~
+            STR_VAR
+                source_kit  = ~UNDEAD_HUNTER~
+                kit_name    = ~V1_PseudoUndeadHunter~
+                clab_path   = ~CLABPP04.2DA~
+                dualclas    = ~V1_PseudoUndeadHunter 0 1 0 0 0 0~
+                abdcdsrq    = ~V1_PseudoUndeadHunter 17 0 0 0 0 99~ //Prevents dual-classing into pseudo kit
+            RET
+                kit_id
+        END //LFA
+
+        //Patch selection dialog to take solemn vow
+        COMPILE ~%MOD_FOLDER%/data/V1IA_DC.d~ ~override~
+
+    END//WITH_TRA
+
+BEGIN @200 DESIGNATED 200//EE Blackguard can dual-class to Cleric [hack]
+LABEL V1_BLACKGUARD_CAN_DUAL
+REQUIRE_PREDICATE (GAME_IS ~BGEE BG2EE IWDEE EET~) ~Skipping: Only EE Games Supported~
+REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 150 @200150
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PD-setup.tra"
+    BEGIN//WITH_TRA
+
+        //Create class abilities for pseudo kit and prevent duplication on dual-classing
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAXDC.spl~ ~override/V1IABDC.spl~
+        COPY_EXISTING ~CLABPA06.2DA~ ~override/CLABPP06.2DA~
+            REPLACE_EVALUATE "\(GA_\|AP_\)\(.......\)" BEGIN
+                INNER_ACTION BEGIN
+                    COPY_EXISTING ~V1IABDC.spl~ ~override~
+                        LPF ADD_SPELL_EFFECT INT_VAR opcode = 172 target = 2 timing = 9 STR_VAR resource = ~%MATCH2%~ END
+                END
+            END ~%MATCH0%~
+        //Give Undead Hunter dual-class ability at level 2
+        APPEND "CLABPA06.2DA" ~DUALCLASS   ****        GA_V1IA_DC  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1IA_DC~
+
+        //Get Blackguard class information
+        COPY_EXISTING ~CLASTEXT.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                PATCH_IF ~%class%~ STRING_EQUAL_CASE ~BLACKGUARD~ BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 4 ~Description~
+                    READ_2DA_ENTRY_FORMER rows row 8 ~BriefDescription~
+                    READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                END
+            END
+        BUT_ONLY
+
+        //For obscure reasons mod "DUAL_TO_KIT" v0.35 will not work on pseudo kits sharing the same description as a true Paladin kit
+        ACTION_GET_STRREF %Description% ~help~
+        //Generate fail safe new help index to patch "DUAL_TO_KIT" v0.35 compatibility
+        OUTER_SET PseudoHelp = RESOLVE_STR_REF (~%help%~^~ ~)
+
+        //Create pseudo Blackguard as Ranger kit
+        LAF ADD_KIT_EX
+            INT_VAR
+                kit_class   = 12 // Ranger
+                visible     = 0 // Character creation
+                mixed       = RESOLVE_STR_REF (@5)
+                help        = %PseudoHelp%
+                briefdesc   = ~%BriefDescription%~
+                fallen_notice=~%FallenNotice%~
+            STR_VAR
+                source_kit  = ~BLACKGUARD~
+                kit_name    = ~V1_PseudoBlackguard~
+                clab_path   = ~CLABPP06.2DA~
+                dualclas    = ~V1_PseudoBlackguard 0 1 0 0 0 0~
+                abdcdsrq    = ~V1_PseudoBlackguard 17 0 17 0 0 99~ //Prevents dual-classing into pseudo kit
+            RET
+                kit_id
+        END //LFA
+
+        //Patch selection dialog to take solemn vow
+        COMPILE ~%MOD_FOLDER%/data/V1IA_DC.d~ ~override~
+
+    END//WITH_TRA
+
+BEGIN @250 DESIGNATED 250//Enable NPC Paladin to acquire 17 Wisdom for dual-classing: Keldorn
+LABEL V1_KELDORN_CAN_DUAL
+REQUIRE_PREDICATE (GAME_IS ~BG2EE EET~) ~Skipping: Only BG2 EE or EET Supported~
+REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 150 @250150
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PD-setup.tra"
+    BEGIN//WITH_TRA
+
+        //If you help Keldorn on his family quest he may return all the wiser
+        COPY_EXISTING ~KELDORP.DLG~ ~override~
+            DECOMPILE_AND_PATCH BEGIN
+                REPLACE_TEXTUALLY ~SetGlobal("KeldornLeave","GLOBAL",99)[%TAB% %LNL%%MNL%%WNL%]+SetGlobal("KickedOut","LOCALS",0)[%TAB% %LNL%%MNL%%WNL%]~ ~SetGlobal("KeldornLeave","GLOBAL",99)%TAB% %LNL%%MNL%%WNL%SetGlobal("KickedOut","LOCALS",0)%TAB% %LNL%%MNL%%WNL%ReallyForceSpell(Myself,GAIN_ONE_WIS_PERMANENT)%TAB% %LNL%%MNL%%WNL%~
+            END
+        BUT_ONLY
+
+        //Keldorn should not be locked out of his personal armor while his Inquisitor calss is deactivated
+        COPY_EXISTING ~NPPLAT.itm~ ~override~
+            READ_BYTE 0x1e ClericUsability
+            WRITE_BYTE 0x1e (%ClericUsability% BAND 0b01111111) //Enable use as a Cleric
+        IF_EXISTS BUT_ONLY
+
+    END//WITH_TRA
+
+BEGIN @300 DESIGNATED 300//Enable Paladin/Cleric to use all Paladin items
+LABEL V1_PALDIN_DUAL_USE_CLASS_ITEMS
+REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 100 @300100
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PD-setup.tra"
+    BEGIN//WITH_TRA
+
+        // Fetch full item array
+        COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
+            SPRINT $allItems(~%SOURCE_RES%~) ~%specific%~
+        BUT_ONLY
+
+        // Allow Paladin/Cleric (aka Ranger/Cleric) to use all Paladin specific items
+        ACTION_PHP_EACH allItems AS item => specific BEGIN
+            COPY_EXISTING ~%item%.itm~ ~override~
+                READ_BYTE 0x1f FighterUsability
+                PATCH_IF ((%FighterUsability% BOR 0b11110111) != 0b11110111) BEGIN //If Fighter cannot use item
+                    READ_BYTE 0x20 PaladinUsability
+                    PATCH_IF ((%PaladinUsability% BOR 0b11101111) = 0b11101111) BEGIN //But Paladin can use item
+                        READ_BYTE 0x21 HumanUsability
+                        PATCH_IF ((%HumanUsability% BOR 0b11110111) = 0b11110111) BEGIN //And Humans can use item
+                            READ_BYTE 0x1f RangerClericUsability
+                            WRITE_BYTE 0x1f (%RangerClericUsability% BAND 0b11111011) //Allow Ranger/Cleric to use item
+                        END
+                    END
+                END
+            IF_EXISTS BUT_ONLY
+        END
         
     END//WITH_TRA
-/*
-BEGIN @200 DESIGNATED 200//All standard Paladin kits can dual-class to Cleric [hack]
-LABEL ~V1_PALADIN_KIT_DUAL~
-REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 100 @201
+
+BEGIN @350 DESIGNATED 350//Limit Paladin/Cleric to only use Paladin weapons not restricted by the Cleric multiclass proficiencies
+LABEL V1_PALDIN_DUAL_RESTRICT_CLASS_ITEMS
+REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 300 @350300
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PD-setup.tra"
+    BEGIN//WITH_TRA
+
+        // Fetch relevant weapon array
+        COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
+            PATCH_IF (%SOURCE_SIZE% > 0x71) BEGIN // Header size should be 114
+                READ_BYTE 0x1f FighterUsability
+                PATCH_IF ((%FighterUsability% BOR 0b11110111) != 0b11110111) BEGIN //If Fighter cannot use item
+                    READ_BYTE 0x1f RangerClericUsability
+                    PATCH_IF ((%RangerClericUsability% BOR 0b11111011) = 0b11111011) BEGIN //If Ranger/Cleric can use item
+                        READ_BYTE 0x31 proficency
+                        PATCH_IF (proficency = 89)  || //BASTARDSWORD
+                                (proficency = 90)  || //LONGSWORD
+                                (proficency = 91)  || //SHORTSWORD
+                                (proficency = 92)  || //AXE
+                                (proficency = 93)  || //TWOHANDEDSWORD
+                                (proficency = 94)  || //KATANA
+                                (proficency = 95)  || //SCIMITARWAKISASHININJATO
+                                (proficency = 96)  || //DAGGER
+                                (proficency = 97)  || //WARHAMMER
+                                (proficency = 98)  || //SPEAR
+                                (proficency = 99)  || //HALBERD
+                                (proficency = 100) || //FLAILMORNINGSTAR
+                                (proficency = 101) || //MACE
+                                (proficency = 102) || //QUARTERSTAFF
+                                (proficency = 103) || //CROSSBOW
+                                (proficency = 104) || //LONGBOW
+                                (proficency = 105) || //SHORTBOW
+                                (proficency = 106) || //DART
+                                (proficency = 107) || //SLING
+                                (proficency = 115)    //CLUB
+                                BEGIN
+                            SPRINT $relevantWeapons(~%SOURCE_RES%~) ~%proficency%~
+                        END
+                    END
+                END
+            END
+        BUT_ONLY
+
+        // Enforce Cleric weapon restrictions on Paladin/Cleric aka Ranger/Cleric
+        COPY_EXISTING ~weapprof.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+        BUT_ONLY
+        ACTION_PHP_EACH relevantWeapons AS weapon => proficency BEGIN
+            COPY_EXISTING ~%weapon%.itm~ ~override~
+                FOR (row = 1; row < rows; ++row) BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 1 ~weapprof~
+                    PATCH_IF (%weapprof% = %proficency%) BEGIN
+                        READ_2DA_ENTRY_FORMER rows row 21 ~canUse~
+                        PATCH_IF (%canUse% = 0) BEGIN
+                            READ_BYTE 0x1f RangerClericUsability
+                            WRITE_BYTE 0x1f (%RangerClericUsability% BOR 0b00000100)
+                        END
+                    END
+                END
+            IF_EXISTS BUT_ONLY
+        END
+            
+    END//WITH_TRA
+
+BEGIN @400 DESIGNATED 400//Restrict Ranger/Cleric to use Paladin items by enforcing lawful good alignment on good Paladin items
+LABEL V1_PALDIN_LAWFUL_CLASS_ITEMS
+REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 300 @400300
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PD-setup.tra"
+    BEGIN//WITH_TRA
+
+        // Fetch full item array
+        COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
+            SPRINT $allItems(~%SOURCE_RES%~) ~%specific%~
+        BUT_ONLY
+
+        // Ban chaotic and neutral alignments on all good Paladin items
+        ACTION_PHP_EACH allItems AS item => specific BEGIN
+            COPY_EXISTING ~%item%.itm~ ~override~
+                READ_BYTE 0x1f FighterUsability
+                PATCH_IF ((%FighterUsability% BOR 0b11110111) != 0b11110111) BEGIN //If Fighter cannot use item
+                    READ_BYTE 0x20 PaladinUsability
+                    PATCH_IF ((%PaladinUsability% BOR 0b11101111) = 0b11101111) BEGIN //But Paladin can use item
+                        READ_BYTE 0x21 HumanUsability
+                        PATCH_IF ((%HumanUsability% BOR 0b11110111) = 0b11110111) BEGIN //And Humans can use item
+                            READ_BYTE 0x1e EvilUsability
+                            PATCH_IF ((%EvilUsability% BOR 0b11111101) != 0b11111101) BEGIN //If item requires Good alignment
+                                WRITE_BYTE 0x1e (%EvilUsability% BOR 0b00101001) //Ban Chaotic and Neutral alignments
+                            END
+                        END
+                    END
+                END
+            IF_EXISTS BUT_ONLY
+        END
+
+    END//WITH_TRA
+
+
+BEGIN @450 DESIGNATED 450//Prevent Paladin/Cleric and Ranger/Cleric to use opposite class items by banning lawful alignment for all Rangers and their items
+LABEL V1_RANGER_BAN_LAWFUL_GOOD
+REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 400 @450400
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PD-setup.tra"
+    BEGIN//WITH_TRA
+
+        // Fetch full item array
+        COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
+            SPRINT $allItems(~%SOURCE_RES%~) ~%specific%~
+        BUT_ONLY
+
+        // Ban lawful alignment on all Ranger items
+        ACTION_PHP_EACH allItems AS item => specific BEGIN
+            COPY_EXISTING ~%item%.itm~ ~override~
+                READ_BYTE 0x1f FighterUsability
+                PATCH_IF ((%FighterUsability% BOR 0b11110111) != 0b11110111) BEGIN //If Fighter cannot use item
+                    READ_BYTE 0x20 RangerUsability
+                    PATCH_IF ((%RangerUsability% BOR 0b11011111) = 0b11011111) BEGIN //But Ranger can use item
+                        READ_BYTE 0x21 HumanUsability
+                        PATCH_IF ((%HumanUsability% BOR 0b11110111) = 0b11110111) BEGIN //And Humans can use item
+                            READ_BYTE 0x1e LawfulUsability
+                            WRITE_BYTE 0x1e (%LawfulUsability% BOR 0b00010000) //Ban Lawful alignment
+                        END
+                    END
+                END
+            IF_EXISTS BUT_ONLY
+        END
+
+        //Get all Rangers including kits (12) and multiclass (18)
+        COPY_EXISTING ~clastext.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 1 ~classID~
+                PATCH_IF ( ~%classID%~ STRING_EQUAL_CASE ~12~ || ~%classID%~ STRING_EQUAL_CASE ~18~ ) BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                    PATCH_IF !( !(~%class%~ STRING_CONTAINS_REGEXP ~PSEUDO~) || !(~%class%~ STRING_CONTAINS_REGEXP ~FALLEN~)) BEGIN
+                        PATCH_IF ~%class%~ STRING_EQUAL_CASE ~ARCHER~ BEGIN TEXT_SPRINT class ~FERALAN~ END
+                        PATCH_IF ~%class%~ STRING_EQUAL_CASE ~BEAST_MASTER~ BEGIN TEXT_SPRINT class ~BEASTMASTER~ END
+                        SPRINT $allRangers(~%class%~) ~%classID%~
+                    END
+                END
+            END
+        BUT_ONLY
+
+        //Ban Lawful alignment for all Rangers
+        COPY_EXISTING ~alignmnt.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                PHP_EACH allRangers AS ranger => ID BEGIN
+                    PATCH_IF ( ~%class%~ STRING_EQUAL_CASE ~%ranger%~  ) BEGIN
+                        SET_2DA_ENTRY_LATER ~alignment~ %row% 1 0 //LG
+                        SET_2DA_ENTRY_LATER ~alignment~ %row% 2 0 //LN
+                        SET_2DA_ENTRY_LATER ~alignment~ %row% 3 0 //LE
+                    END
+                END
+            END
+            SET_2DA_ENTRIES_NOW ~alignment~ %cols%
+            PRETTY_PRINT_2DA
+        BUT_ONLY
+
+        //Get class description
+        COPY_EXISTING ~clastext.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                PATCH_IF ~%class%~ STRING_EQUAL_CASE ~RANGER~ BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 4 ~offset~
+                END
+            END
+        BUT_ONLY
+        ACTION_GET_STRREF %offset% ~description~
+
+        //Patch class description
+        OUTER_PATCH_SAVE description ~%description%~ BEGIN
+            SPRINT search @20
+            SPRINT replace @21
+            REPLACE_TEXTUALLY ~%search%~ ~%replace%~
+        END
+        STRING_SET_EVALUATE %offset% ~%description%~
+
+    END//WITH_TRA
+
+
+BEGIN @500 DESIGNATED 500//Allow true neutral alignment for all Rangers to compensate loss of lawful good alignment
+LABEL V1_RANGER_ALLOW_TRUE_NEUTRAL
+REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 450 @500450
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PD-setup.tra"
+    BEGIN//WITH_TRA
+
+        //Get all Rangers including kits (12) and multiclass (18)
+        COPY_EXISTING ~clastext.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 1 ~classID~
+                PATCH_IF ( ~%classID%~ STRING_EQUAL_CASE ~12~ || ~%classID%~ STRING_EQUAL_CASE ~18~ ) BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                    PATCH_IF !( !(~%class%~ STRING_CONTAINS_REGEXP ~PSEUDO~) || !(~%class%~ STRING_CONTAINS_REGEXP ~FALLEN~)) BEGIN
+                        PATCH_IF ~%class%~ STRING_EQUAL_CASE ~ARCHER~ BEGIN TEXT_SPRINT class ~FERALAN~ END
+                        PATCH_IF ~%class%~ STRING_EQUAL_CASE ~BEAST_MASTER~ BEGIN TEXT_SPRINT class ~BEASTMASTER~ END
+                        SPRINT $allRangers(~%class%~) ~%classID%~
+                    END
+                END
+            END
+        BUT_ONLY
+
+        //Allow True Neutral alignment for all Rangers
+        COPY_EXISTING ~alignmnt.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                PHP_EACH allRangers AS ranger => ID BEGIN
+                    PATCH_IF ( ~%class%~ STRING_EQUAL_CASE ~%ranger%~  ) BEGIN
+                        SET_2DA_ENTRY_LATER ~alignment~ %row% 5 1 //NN
+                    END
+                END
+            END
+            SET_2DA_ENTRIES_NOW ~alignment~ %cols%
+            PRETTY_PRINT_2DA
+        BUT_ONLY
+
+        //Get class description
+        COPY_EXISTING ~clastext.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                PATCH_IF ~%class%~ STRING_EQUAL_CASE ~RANGER~ BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 4 ~offset~
+                END
+            END
+        BUT_ONLY
+        ACTION_GET_STRREF %offset% ~description~
+
+        //Patch class description
+        OUTER_PATCH_SAVE description ~%description%~ BEGIN
+            SPRINT search @21
+            SPRINT replace @22
+            REPLACE_TEXTUALLY ~%search%~ ~%replace%~
+        END
+        STRING_SET_EVALUATE %offset% ~%description%~
+
+    END//WITH_TRA
+
+BEGIN @550 DESIGNATED 550//Prevent Paladin/Cleric to get recognized as a Ranger after Paladin class reactivation
+LABEL V1_PALADIN_IS_NO_RANGER
+REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 100 @550100
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PD-setup.tra"
+
+
+    BEGIN//WITH_TRA
+
+        //Detect installed Paladin pseudo kits
+        OUTER_SPRINT KitList ~!Kit(Player1,V1_PseudoPaladin)~
+        OUTER_INNER_PATCH ~~ BEGIN
+            SET ID = ID_OF_LABEL "setup-SCI-Dualadins.tp2" ~V1_PALADIN_KIT_CAN_DUAL~
+            PATCH_IF MOD_IS_INSTALLED "setup-SCI-Dualadins.tp2" %ID% BEGIN
+                SPRINT KitList ~!Kit(Player1,V1_PseudoPaladin) !Kit(Player1,V1_PseudoCavalier) !Kit(Player1,V1_PseudoInquisitor) !Kit(Player1,V1_PseudoUndeadHunter)~
+            END
+            SET ID = ID_OF_LABEL "setup-SCI-Dualadins.tp2" ~V1_BLACKGUARD_CAN_DUAL~
+            PATCH_IF MOD_IS_INSTALLED "setup-SCI-Dualadins.tp2" %ID% BEGIN
+                SPRINT KitList ~!Kit(Player1,V1_PseudoPaladin) !Kit(Player1,V1_PseudoCavalier) !Kit(Player1,V1_PseudoInquisitor) !Kit(Player1,V1_PseudoUndeadHunter) !Kit(Player1,V1_PseudoBlackguard)~
+            END
+        END
+        OUTER_SPRINT RangerList ~Class(Player1,RANGER) ~^~%KitList%~
+        OUTER_SPRINT RangerAllList ~Class(Player1,RANGER_ALL) ~^~%KitList%~
+
+        //Ban Paladin pseudo kits from all Ranger checks
+        COPY_EXISTING_REGEXP GLOB ~^.+\.dlg~ ~override~
+            PATCH_IF RESOURCE_CONTAINS ~%SOURCE_FILE%~ ~Class(Player1,RANGER)~ BEGIN // Speed install up tremendously
+                //PATCH_PRINT ~RANGER: ~^~%SOURCE_FILE%~
+                DECOMPILE_AND_PATCH BEGIN
+                    REFACTOR_TRIGGER ~Class(Player1,RANGER)~ ~%RangerList%~
+                END
+                DECOMPILE_AND_PATCH BEGIN
+                    //Recommended by refactor trigger to fix whitespace
+                END
+            END
+            PATCH_IF RESOURCE_CONTAINS ~%SOURCE_FILE%~ ~Class(Player1,RANGER_ALL)~ BEGIN // Speed install up tremendously
+                //PATCH_PRINT ~RANGER_ALL: ~^~%SOURCE_FILE%~
+                DECOMPILE_AND_PATCH BEGIN
+                    REFACTOR_TRIGGER ~Class(Player1,RANGER_ALL)~ ~%RangerAllList%~
+                END
+                DECOMPILE_AND_PATCH BEGIN
+                    //Recommended by refactor trigger to fix whitespace
+                END
+            END
+        BUT_ONLY
+
+    END//WITH_TRA
+
+/*Skipped - connecting with logical OR does not work as intended
+BEGIN @600 DESIGNATED 600//Allow Paladin/Cleric to get recognized as a Paladin after dual-class reactivation
+LABEL ~V1_PSEUDOPALADIN_IS_PALADIN~
+REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 100 @600100
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PD-setup.tra"
+    BEGIN//WITH_TRA
+
+        //Make Paladin/Cleric recognized as Paladin upon reactivation of pseudo kit
+        COPY_EXISTING_REGEXP GLOB ~^.+\.dlg~ ~override~
+            PATCH_IF RESOURCE_CONTAINS ~%SOURCE_FILE%~ ~Class(Player1,PALADIN)~ BEGIN // Speed install up tremendously
+                PATCH_PRINT ~PALADIN: ~^~%SOURCE_FILE%~
+                DECOMPILE_AND_PATCH BEGIN
+                    REFACTOR_TRIGGER ~Class(Player1,PALADIN)~ ~OR(2) Class(Player1,PALADIN) Kit(Player1,V1_PseudoPaladin) Kit(Player1,V1_PseudoCavalier) Kit(Player1,V1_PseudoInquisitor) Kit(Player1,V1_PseudoUndeadHunter)~
+                END
+                DECOMPILE_AND_PATCH BEGIN
+                    //Recommended by refactor trigger to fix whitespace
+                END
+            END
+            PATCH_IF RESOURCE_CONTAINS ~%SOURCE_FILE%~ ~Class(Player1,PALADIN_ALL)~ BEGIN // Speed install up tremendously
+                PATCH_PRINT ~PALADIN_ALL: ~^~%SOURCE_FILE%~
+                DECOMPILE_AND_PATCH BEGIN
+                    REFACTOR_TRIGGER ~Class(Player1,PALADIN_ALL)~ ~OR(2) Class(Player1,PALADIN_ALL) Kit(Player1,V1_PseudoPaladin) Kit(Player1,V1_PseudoCavalier) Kit(Player1,V1_PseudoInquisitor) Kit(Player1,V1_PseudoUndeadHunter)~
+                END
+                DECOMPILE_AND_PATCH BEGIN
+                    //Recommended by refactor trigger to fix whitespace
+                END
+            END
+        BUT_ONLY
+
+        //Make kits recognized as a proper Paladins
+        COPY_EXISTING_REGEXP GLOB ~^.+\.dlg~ ~override~
+            PATCH_IF RESOURCE_CONTAINS ~%SOURCE_FILE%~ ~Kit(Player1,CAVALIER)~ BEGIN // Speed install up tremendously
+                PATCH_PRINT ~CAVALIER: ~^~%SOURCE_FILE%~
+                DECOMPILE_AND_PATCH BEGIN
+                    REFACTOR_TRIGGER ~Kit(Player1,CAVALIER)~ ~OR(2) Kit(Player1,CAVALIER) Kit(Player1,V1_PseudoCavalier)~
+                END
+                DECOMPILE_AND_PATCH BEGIN
+                    //Recommended by refactor trigger to fix whitespace
+                END
+            END
+            PATCH_IF RESOURCE_CONTAINS ~%SOURCE_FILE%~ ~Kit(Player1,INQUISITOR)~ BEGIN // Speed install up tremendously
+                PATCH_PRINT ~INQUISITOR: ~^~%SOURCE_FILE%~
+                DECOMPILE_AND_PATCH BEGIN
+                    REFACTOR_TRIGGER ~Kit(Player1,INQUISITOR)~ ~OR(2) Kit(Player1,INQUISITOR) Kit(Player1,V1_PseudoInquisitor)~
+                END
+                DECOMPILE_AND_PATCH BEGIN
+                    //Recommended by refactor trigger to fix whitespace
+                END
+            END
+            PATCH_IF RESOURCE_CONTAINS ~%SOURCE_FILE%~ ~Kit(Player1,UNDEADHUNTER)~ BEGIN // Speed install up tremendously
+                PATCH_PRINT ~UNDEADHUNTER: ~^~%SOURCE_FILE%~
+                DECOMPILE_AND_PATCH BEGIN
+                    REFACTOR_TRIGGER ~Kit(Player1,UNDEADHUNTER)~ ~OR(2) Kit(Player1,UNDEADHUNTER) Kit(Player1,V1_PseudoUndeadHunter)~
+                END
+                DECOMPILE_AND_PATCH BEGIN
+                    //Recommended by refactor trigger to fix whitespace
+                END
+            END
+        BUT_ONLY
+
+        //Make Blackguard recognized as the vile being he is
+        COPY_EXISTING_REGEXP GLOB ~^.+\.dlg~ ~override~
+            PATCH_IF RESOURCE_CONTAINS ~%SOURCE_FILE%~ ~Kit(Player1,BLACKGUARD)~ BEGIN // Speed install up tremendously
+                PATCH_PRINT ~BLACKGUARD: ~^~%SOURCE_FILE%~
+                DECOMPILE_AND_PATCH BEGIN
+                    REFACTOR_TRIGGER ~Kit(Player1,BLACKGUARD)~ ~OR(2) Kit(Player1,BLACKGUARD) Kit(Player1,V1_PseudoBlackguard)~
+                END
+                DECOMPILE_AND_PATCH BEGIN
+                    READ_ASCII 0 texty (BUFFER_LENGTH)
+                    INNER_ACTION BEGIN
+                        COPY_EXISTING ~%MOD_FOLDER%/temp/dummy.d~ ~%MOD_FOLDER%/temp/%SOURCE_RES%_patched.d~
+                            REPLACE_TEXTUALLY "text" ~%texty%~
+                        BUT_ONLY
+                    END
+                    //Recommended by refactor trigger to fix whitespace
+                END
+            END
+        BUT_ONLY
+
+        END//WITH_TRA
 */

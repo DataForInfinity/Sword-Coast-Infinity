@@ -1,15 +1,65 @@
+@0=~Göttliche Präsenz~
 @1=~Paladin~
-@2=~Chevalier~
+@2=~Ritter~//Chevalier
 @3=~Inquisitor~
 @4=~Geisterjäger~
-@5=~Drachentöter~
-@6=~Läuterer~
+@5=~Finsterer Streiter~
 
-@10=~Heiliges Gelübde~
-@11=~Heiliges Gelübde
+@8=~
+
+Hauptattribute bei Klassenkombination: Stärke, Charisma~
+@9=~.*kann Klerikerzauber wirken.*~
+
+@10=~
+– 2. Stufe: kann ein Heiliges Gelübte ablegen und die Klassenkombination zum Kleriker eingehen~
+@11=~Heiliges Gelübde~
+@12=~Heiliges Gelübde
 
 Der Paladin schwört <PRO_HISHER> Hingabe einer Gottheit, die <PRO_HISHER> Pfad der Rechtschaffenheit teilt, und erhält ihren Segen, durch sie hindurch göttliche Magie <PRO_HISHER> zu wirken. Mit diesem Gelübde <PRO_HISHER> absoluten Ergebenheit widerruft <PRO_HESHE> <PRO_HISHER> weitere Entwicklung als Paladin.
 
-WARNUNG: Dieses Gelübde kann nicht widerrufen werden! Der Charakter wird nicht mehr als Paladin erkannt, selbst wenn keine Klassenkombination durchgeführt wird. Die Klassenkombination muss selbst über den üblichen Weg durchgeführt werden. Der Paladin benötigt dazu 15 Stärke und 15 Charisma zusätzlich zu 17 Weisheit, um ein Kleriker zu werden.
+WARNUNG: Dieses Gelübde kann nicht widerrufen werden! Der Charakter wird nicht mehr als Paladin erkannt, selbst wenn keine Klassenkombination durchgeführt wird. Die Klassenkombination muss selbst über den üblichen Weg durchgeführt werden. Der Paladin benötigt dazu 15 Stärke und 15 Charisma zusätzlich zu 17 Weisheit, um ein Kleriker zu werden.
 
-HINWEIS: Im Charakterbogen werden die Kleriker- und Paladinklasse richtig angezeigt. Allerdings wird die Klassenkombination aufgrund einer hartcodierten Begrenzung der Spielengine auf Kleriker/Waldläufer gesetzt. Sofern man die Klassenkombination umgehend durchführt, bleibt es bei diesem kosmetischen Problem. Sollte man die Pseudopaladinklasse weiterspielen, muss man mit anormalem Verhalten rechnen.~
+HINWEIS: Im Charakterbogen werden die Kleriker- und Paladinklasse richtig angezeigt. Allerdings wird die Klassenkombination aufgrund einer hartcodierten Begrenzung der Spielengine auf Kleriker/Waldläufer gesetzt. Sofern man die Klassenkombination umgehend durchführt, bleibt es bei diesem kosmetischen Problem. Sollte man die Pseudopaladinklasse weiterspielen, muss man mit anormalem Verhalten rechnen.
+
+KOMPATIBILITÄT: Falls eine Modifikation verwendet wird, um eine Klassenkombination mit einer Klerikerunterklasse einzugehen, wird die Paladinklasse zu Waldläufer wechseln. Dadurch führt die Reaktivierung der Klasse zum Erhalt von Verwendungen von Tiere Bezaubern und Punkte in Schleichfähigkeiten.~
+
+@13=~
+– 2. Stufe: kann ein Unheiliges Gelübte ablegen und die Klassenkombination zum Kleriker eingehen~
+@14=~Unheiliges Gelübde~
+@15=~Unheiliges Gelübde
+
+Der Finstere Streiter schwört <PRO_HISHER> Hingabe einer dunklen Gottheit, die <PRO_HISHER> Pfad der Bösen teilt, und erhält die Macht, durch sie hindurch göttliche Magie <PRO_HISHER> zu wirken. Mit diesem Gelübde <PRO_HISHER> absoluten Ergebenheit widerruft <PRO_HESHE> <PRO_HISHER> weitere Entwicklung als Finsterer Streiter.
+
+WARNUNG: Dieses Gelübde kann nicht widerrufen werden! Der Charakter wird nicht mehr als Finsterer Streiter erkannt, selbst wenn keine Klassenkombination durchgeführt wird. Die Klassenkombination muss selbst über den üblichen Weg durchgeführt werden. Der Finstere Streiter benötigt dazu 15 Stärke, 15 Konstitution und 15 Charisma zusätzlich zu 17 Weisheit, um ein Kleriker zu werden.
+
+HINWEIS: Im Charakterbogen werden der Finstere Streiter und die Klerikerklasse richtig angezeigt. Allerdings wird die Klassenkombination aufgrund einer hartcodierten Begrenzung der Spielengine auf Kleriker/Waldläufer gesetzt. Sofern man die Klassenkombination umgehend durchführt, bleibt es bei diesem kosmetischen Problem. Sollte man die Pseudoklasse weiterspielen, muss man mit anormalem Verhalten rechnen.
+
+KOMPATIBILITÄT: Falls eine Modifikation verwendet wird, um eine Klassenkombination mit einer Klerikerunterklasse einzugehen, wird die Klasse des Finsteren Streiters zu Waldläufer wechseln. Dadurch führt die Reaktivierung der Klasse zum Erhalt von Verwendungen von Tiere Bezaubern und Punkte in Schleichfähigkeiten.~
+
+@20=~kann nur guter Gesinnung sein~
+@21=~kann nur neutral guter oder chaotisch guter Gesinnung sein~
+@22=~kann nur neutral guter, chaotisch guter oder absolut neutraler Gesinnung sein~
+
+@30=~*Ihr fühlt eine göttliche Anwesenheit herannahen. Was auch immer ihr nun sagt wird von großer Bedeutung sein.*~
+@31=~Hört mein ewiges Gelübde, denn ich schwöre dir auf deinen göttlichen Namen meine Gehorsamkeit und unerschütterliche Treue als dein geheiligter Diener!~
+@32=~Hört mein ewiges Gelübde, denn ich schwöre bei meinem schwarzen Blut, eurem jeden Willen zu gehorchen und die Unwilligen eurer strenge Herrschaft zu unterwerfen!~
+@33=~Bei allem, was mir heilig ist, ich werde weiter als Paladin in deinem Namen dienen. Doch zum Priester bin ich nicht bestimmt.~
+@34=~Bei allem, was ich verachte, ich werde meinen Weg als finsterer Streiter fortsetzen. Doch euer Klerus wird niemals ein Platz sein für jemanden wie mich.~
+@35=~Erhört mein Gebet, schenkt mir die Macht, meine Feinde zu besiegen, und eines Tages mag ich euch meinen ewigen Schwur leisten.~
+
+@40=~*Für einen Moment lang geschieht nichts. Doch dann umfängt euch ein tiefes Gefühl der Wärme.*~
+@41=~Ich danke dir, dass du mich aufgenommen hast, und werde umgehend in die Reihen deiner Kleriker eintreten.~
+@42=~*Für einen Moment lang passiert nichts. Doch dann droht ein Gefühl kalten Hasses euch zu verschlingen.*~
+@43=~Ihr tatet gut daran, mich zu akzeptieren. Ich werde umgehend meinen angestammten Platz unter euren Klerikern einnehmen.~
+@44=~Ihr lehnt mein Gelübde ab! Ich bin zutiefst verwirrt. Wie könnt ihr meiner Gesinnung so sehr misstrauen?~
+
+@50=~*Für einen Moment lang geschieht nichts. Doch dann verschwindet die Erscheinung gleich einer warmen Brise.*~
+@51=~Ich werde aus deiner Rücksicht lernen und unserem Weg für immer treu bleiben.~
+@52=~*Für einen Moment lang geschieht nichts. Doch dann verschwindet die Erscheinung gleich eines eisigen Windhauchs.*~
+@53=~Hintergeht mich nicht und wir können diese Welt noch immer in die Dunkelheit stürzen.~
+@54=~Könnt ihr nicht aufhören, mich zu belästigen? Akzeptiert endlich, dass sich meine Gesinnung gewandelt hat, und ich euch verstoßen will!~
+
+@60=~*Die Erscheinung verschwindet wie von einer frischen Brise davon geweht. Ihr fühlt, dass mehr von euch erwartet wurde.*~
+@61=~Ich schwöre, dass ich eines Tages die vorbildhafte Stärke, das Charisma und die Weisheit besitzen werde, die dir gebührt.~
+@62=~*Die Erscheinung verschwindet wie von einem frostigen Windhauch davon geweht. Ihr fühlt, dass ihr eine Enttäuschung wart.*~
+@63=~Ich schwöre, dass ich eines Tages die beispiellose Stärke, Konstitution, das Charisma und die Weisheit besitzen werde, die ihr fordert.~

@@ -1,3 +1,28 @@
 @100=~Base-class Paladin can dual-class to Cleric~
-@200=~All standard Paladin kits can dual-class to Cleric~
-@201=~This component requires 'Base-class Paladin can dual-class to Cleric' to be installed~
+
+@150=~All standard Paladin kits can dual-class to Cleric~
+@150100=~This component requires 'Base-class Paladin can dual-class to Cleric' to be installed~
+
+@200=~The EE Blackguard can dual-class to Cleric~
+@200150=~This component requires 'All standard Paladin kits can dual-class to Cleric' to be installed~
+
+@250=~Enable NPC Paladin to acquire 17 Wisdom for dual-classing: Keldorn~
+@250150=~This component requires 'All standard Paladin kits can dual-class to Cleric' to be installed~
+
+@300=~Enable Paladin/Cleric to use all Paladin items~
+@300100=~This component requires 'Base-class Paladin can dual-class to Cleric' to be installed~
+
+@350=~Limit Paladin/Cleric to only use Paladin weapons not restricted by the Cleric multiclass proficiencies~
+@350300=~This component requires 'Enable Paladin/Cleric to use all Paladin items' to be installed~
+
+@400=~Restrict Ranger/Cleric to use Paladin items by enforcing lawful good alignment on good Paladin items~
+@400300=~This component requires 'Enable Paladin/Cleric to use Paladin items' to be installed~
+
+@450=~Prevent Paladin/Cleric and Ranger/Cleric to use opposite class items by banning lawful alignment for all Rangers and their items~
+@450400=~This component requires 'Restrict Ranger/Cleric to use Paladin items by enforcing lawful alignment on good Paladin items' to be installed~
+
+@500=~Allow true neutral alignment for all Rangers to compensate loss of lawful good alignment~
+@500450=~This component requires 'Prevent Paladin/Cleric and Ranger/Cleric to use opposite class items by banning lawful alignment for all Rangers and their items' to be installed~
+
+@550=~Prevent Paladin/Cleric to get recognized as a Ranger after Paladin class reactivation~
+@500100=~This component requires 'Base-class Paladin can dual-class to Cleric' to be installed~

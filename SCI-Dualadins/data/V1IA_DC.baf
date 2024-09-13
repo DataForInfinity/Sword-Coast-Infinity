@@ -1,0 +1,6 @@
+IF
+	Class(LastSummonerOf(Myself),PALADIN)
+THEN
+	RESPONSE #100
+		StartDialog("V1IA_DC",LastSummonerOf(Myself))
+END

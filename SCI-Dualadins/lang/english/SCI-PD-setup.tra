@@ -1,15 +1,65 @@
+@0=~Divine Presence~
 @1=~Paladin~
 @2=~Cavalier~
 @3=~Inquisitor~
 @4=~Undead Hunter~
-@5=~Wyrmslayer~
-@6=~Purifier~
+@5=~Blackguard~
 
-@10=~Sacred Vow~
-@11=~Sacred Vow
+@8=~
+
+Prime Requisites for For Dual-Classing: Strength, Charisma~
+@9=~.*May cast priest spells.*~
+
+@10=~
+– May take a Sacred Vow and dual-class to Cleric, starting at level 2.~
+@11=~Sacred Vow~
+@12=~Sacred Vow
 
 The Paladin proclaims <PRO_HISHER> devotion to a god aligned with <PRO_HISHER> righteous path, and is granted the blessing to drawn divine magic from <PRO_HISHER> deity. This vow of ultimate service renounces the further advancement as a Paladin.
 
-WARNING: This vow cannot be revoked! The character will not be recognized as a Paladin anymore, even if not dual-classing. After use the dual-class shall be initiated manually by the normal process. The Paladin will require 15 Strength and 15 Charisma in addition to 17 Wisdom for becoming a Cleric.
+WARNING: This vow cannot be revoked! The character will not be recognized as a Paladin anymore, even if not dual-classing. After use the dual-class shall be initiated manually by the normal process. The Paladin will require 15 Strength and 15 Charisma in addition to 17 Wisdom for becoming a Cleric.
 
-DISCLAIMER: The character sheet will show the Cleric and Paladin class, as would be expected. However, the combined class will be set to Cleric/Ranger after dual-classing. This is a hard-coded engine limitation. It remains but a cosmetic issue when dual-classed immediately. Expect aberrant behavior if continuing as the pseudo single class. ~
+DISCLAIMER: The character sheet will show the Cleric and Paladin class, as would be expected. However, the combined class will be set to Cleric/Ranger after dual-classing. This is a hard-coded engine limitation. It remains but a cosmetic issue when dual-classed immediately. Expect aberrant behavior if continuing as the pseudo single class.
+
+COMPATIBILITY: If using a mod to dual-class into a Cleric kit the Paladin class will be switched to Ranger. This will result in gaining uses of Charm Animal and points in sneaking skills upon reactivating the class.~
+
+@13=~
+– May take a Unsacred Vow and dual-class to Cleric, starting at level 2.~
+@14=~Unsacred Vow~
+@15=~Unsacred Vow
+
+The Blackguard proclaims <PRO_HISHER> devotion to a dark god aligned with <PRO_HISHER> evil path, and is granted the power to drawn divine magic from <PRO_HISHER> deity. This vow of ultimate service renounces the further advancement as a Blackguard.
+
+WARNING: This vow cannot be revoked! The character will not be recognized as a Blackguard anymore, even if not dual-classing. After use the dual-class shall be initiated manually by the normal process. The Blackguard will require 15 Strength, 15 Constitution and 15 Charisma in addition to 17 Wisdom for becoming a Cleric.
+
+DISCLAIMER: The character sheet will show the Blackguard and Cleric class, as would be expected. However, the combined class will be set to Cleric/Ranger after dual-classing. This is a hard-coded engine limitation. It remains but a cosmetic issue when dual-classed immediately. Expect aberrant behavior if continuing as the pseudo single class.
+
+COMPATIBILITY: If using a mod to dual-class into a Cleric kit the Blackguard class will be switched to Ranger. This will result in gaining uses of Charm Animal and points in sneaking skills upon reactivating the class.~
+
+@20=~Alignment restricted to good~
+@21=~Alignment restricted to neutral good and chaotic good~
+@22=~Alignment restricted to neutral good, chaotic good and true neutral~
+
+@30=~*You feel a divine presence approaching. Anything you may now say will carry much weight.*~
+@31=~Hear my solemn vow, for I swear by your divine name my obedience and unwavering allegiance as your holy servant!~
+@32=~Hear my solemn vow, for I swear on my black blood to obey your every will as and extend your stern rule on the unwilling!~
+@33=~For all I hold holy, I will remain to serve as a Paladin in your name, but a priest I shall never be.~
+@34=~By all I despise, I will remain on my path as a Blackguard, your clergy can never be a place for one such as I.~
+@35=~I pray to you, give me the strength to vanquish my foes, and one day I may grant my solemn vow to you.~
+
+@40=~*For a moment nothing happens. But then a deep feeling of warmth embraces you.*~
+@41=~I thank you for accepting me and shall be on my way to become a Cleric of yours.~
+@42=~*For a moment nothing happens. But then a feeling of cold hatred engulfs you.*~
+@43=~You have done well by accepting me, I shall be on my way to become a Cleric of yours.~
+@44=~You reject my vow! I am deeply confused, how can you not trust in my alignment?~
+
+@50=~*For a moment nothing happens. But then, like a warm breeze, the presence vanishes.*~
+@51=~I shall learn from your comprehension and stay true to our path forevermore.~
+@52=~*For a moment nothing happens. But then, like a freezing breeze, the presence vanishes.*~
+@53=~Do not cross me, and we may yet plunge this world into darkness.~
+@54=~Will you not stop pestering me? Accept that my alignment has changed and be cast away!~
+
+@60=~*The presence vanishes, as blown away by a fresh breeze. You sense that more had been expected from you.*~
+@61=~I swear that one day I will live up to the exemplary strength, charisma and wisdom you deserve.~
+@62=~*The presence vanishes, as blown away by a chill breeze. You sense that you were a disappointment.*~
+@63=~I swear that one day I will live up to the unparalleled strength, constitution, charisma and wisdom you demand.~

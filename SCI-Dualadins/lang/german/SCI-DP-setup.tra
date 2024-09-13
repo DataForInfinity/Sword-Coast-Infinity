@@ -1,3 +1,28 @@
 @100=~Der normale Paladin kann die Klassenkombination zum Kleriker durchführen~
-@200=~Alle standardmäßigen Paladinunterklassen können die Klassenkombination zum Kleriker durchführen~
-@201=~Diese Komponente erfordert 'Der reine Paladin kann die Klassenkombination zum Kleriker durchführen'~
+
+@150=~Alle standardmäßigen Paladinunterklassen können die Klassenkombination zum Kleriker durchführen~
+@150100=~Diese Komponente erfordert 'Der reine Paladin kann die Klassenkombination zum Kleriker durchführen'~
+
+@200=~Der EE Finstere Streiter kann die Klassenkombination zum Kleriker durchführen~
+@200150=~Diese Komponente erfordert 'Alle standardmäßigen Paladinunterklassen können die Klassenkombination zum Kleriker durchführen'~
+
+@250=~Ermöglicht dem NPC Paladin die zur Klassenkombination erforderlichen 17 Weisheit zu erreichen: Keldorn~
+@250150=~Diese Komponente erfordert 'Alle standardmäßigen Paladinunterklassen können die Klassenkombination zum Kleriker durchführen'~
+
+@300=~Ermöglicht dem Paladin/Kleriker die Verwendung aller Paladin-Klassengegenstände~
+@300100=~Diese Komponente erfordert 'Der reine Paladin kann die Klassenkombination zum Kleriker durchführen'~
+
+@350=~Beschränkt den Paladin/Kleriker auf die Verwendung von Paladin Waffen mit welchen ein Kleriker in Klassenkombination geübt sein könnte~
+@350300=~Diese Komponente erfordert 'Ermöglicht dem Paladin/Kleriker die Verwendung aller Paladin-Klassengegenstände'~
+
+@400=~Beschränkt die Nutzung von Paladin-Klassengegenständen durch Waldläufer/Kleriker indem Rechtschaffend Gut als Gesinnung für gute Gegenstände erforderlich wird~
+@400300=~Diese Komponente erfordert 'Ermöglicht dem Paladin/Kleriker die Verwendung aller Paladin-Klassengegenstände'~
+
+@450=~Verhindert die Nutzung der nicht zugehörigen Klassengegenstände durch Paladin/Kleriker und Waldläufer/Kleriker indem allen Waldläufern und ihren Gegenständen die Gesinnung rechtschaffend untersagt wird~
+@450400=~Diese Komponente erfordert eins von 'Beschränkt die Nutzung von Paladin-Klassengegenständen durch Waldläufer/Kleriker indem rechtschaffende Gesinnung für gute Gegenstände erforderlich wird'~
+
+@500=~Erlaubt die Gesinnung Absolut Neutral für alle Waldläufer als Kompensation des Verlusts der Gesinnung Rechtschaffend Gut~
+@500450=~Diese Komponente erfordert 'Verhindert die Nutzung der nicht zugehörigen Klassengegenstände durch Paladin/Kleriker und Waldläufer/Kleriker indem allen Waldläufern und ihren Gegenständen die Gesinnung rechtschaffend untersagt wird'~
+
+@550=~Vermeidet die Fehlerkennung des Paladin/Klerikers als Waldläufer nachdem die Paladinklasse reaktiviert wurde~
+@500100=~Diese Komponente erfordert 'Der reine Paladin kann die Klassenkombination zum Kleriker durchführen'~
