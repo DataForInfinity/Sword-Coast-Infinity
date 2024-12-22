@@ -11,3 +11,5 @@ For discusion please visit the relevant forum:
 
 Currently released mods:
 - Dualadins - Paladins can dual-class (https://www.nexusmods.com/baldursgate/mods/75)
+- RepAInted - Portrait Tribute Pack (https://www.nexusmods.com/baldursgate/mods/90)
+- Blades & Bolts - Expanded Proficiencies (https://www.nexusmods.com/baldursgate/mods/91)
