@@ -1,0 +1,660 @@
+BACKUP ~weidu_external/backup/SCI-Blades+Bolts~
+AUTHOR ~AvA (https://www.nexusmods.com/baldursgate/mods/91)~
+AUTO_EVAL_STRINGS
+
+VERSION ~v1.0~
+
+LANGUAGE
+    ~English~
+    ~english~
+    "%MOD_FOLDER%/lang/english/SCI-BB-setup.tra"
+LANGUAGE
+    ~Deutsch~
+    ~german~
+    "%MOD_FOLDER%/lang/german/SCI-BB-setup.tra"
+
+// ================================================== ================================================== ================================================== //
+
+BEGIN @100 DESIGNATED 100//Universal ammunition
+LABEL ~V1_UNIVERSAL_AMMO~
+REQUIRE_PREDICATE (GAME_IS ~BGEE BG2EE IWDEE EET~) ~Skipping: Only EE Games Supported~
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-BB-setup.tra"
+    BEGIN//WITH_TRA
+
+        // Fetch relevant weapon array
+        COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
+            PATCH_IF (%SOURCE_SIZE% > 0x71) BEGIN
+                READ_BYTE 0x1c type
+                PATCH_IF (type = 5)  || //ARROWS
+                         (type = 14) || //BULLETS
+                         (type = 31) //BOLTS
+                        BEGIN
+                    SPRINT $relevant_weapons(~%SOURCE_RES%~) ~%type%~
+                END
+            END
+        BUT_ONLY
+        
+        // Allow everyone to holster any regular ammunition
+        ACTION_PHP_EACH relevant_weapons AS weapon => type BEGIN
+            COPY_EXISTING ~%weapon%.itm~ ~override~
+                READ_BYTE 0x1f FighterUsability
+                // Patch if Fighter can use ammo
+                PATCH_IF ((%FighterUsability% BOR 0b11110111) = 0b11110111) BEGIN
+                    WRITE_BYTE 0x1e (THIS BAND 0b00111111) //Byte 1 classes
+                    WRITE_BYTE 0x1f (THIS BAND 0b00000000) //Byte 2 classes
+                    WRITE_BYTE 0x20 (THIS BAND 0b10000000) //Byte 3 classes
+                    WRITE_BYTE 0x21 (THIS BAND 0b10011111) //Byte 4 classes
+                END
+            IF_EXISTS BUT_ONLY
+        END
+
+    END//WITH_TRA
+
+// ================================================== ================================================== ================================================== //
+
+BEGIN @200 DESIGNATED 200//Make light crossbows one-handed to enable use of a shield
+LABEL ~V1_1H_CROSSBOWS~
+REQUIRE_PREDICATE (GAME_IS ~BGEE BG2EE IWDEE EET~) ~Skipping: Only EE Games Supported~
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-BB-setup.tra"
+    BEGIN//WITH_TRA
+
+        // Fetch relevant weapon array
+        COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
+            PATCH_IF (%SOURCE_SIZE% > 0x71) BEGIN
+                READ_BYTE 0x1c type
+                PATCH_IF (type = 27)  //CROSSBOW
+                        BEGIN
+                    SPRINT $relevant_weapons(~%SOURCE_RES%~) ~%type%~
+                END
+            END
+        BUT_ONLY
+
+        // Make light crossbows one-handed
+        COPY_EXISTING ~xbow04.itm~ ~override~
+	        READ_LONG 0x08 light_identifier
+        BUT_ONLY
+        ACTION_PHP_EACH relevant_weapons AS weapon => type BEGIN
+            COPY_EXISTING ~%weapon%.itm~ ~override~
+                READ_LONG 0x08 key_identifier
+                PATCH_IF (key_identifier = %light_identifier%) BEGIN
+                    // Make one-handed
+                    WRITE_BYTE 0x18 (THIS BAND ~0b11111101~)
+                    SPRINT onehanded @1
+                    SPRINT twohanded @2
+                    // Update unidentified description
+                    READ_LONG 0x50 index
+                    PATCH_IF (~%index%~ > 0) BEGIN
+                        GET_STRREF ~%index%~ ~description~
+                        PATCH_IF (~%description%~ STRING_CONTAINS_REGEXP ~%twohanded%~) = 0 BEGIN
+                            SPRINT update ""
+                            INNER_PATCH_SAVE update ~%description%~ BEGIN
+                                REPLACE_TEXTUALLY EXACT_MATCH ~%twohanded%~ ~%onehanded%~
+                            END
+                            SAY_EVALUATED UNIDENTIFIED_DESC ~%update%~
+                        END
+                    END
+                        // Update identified description
+                    READ_LONG 0x54 index
+                    PATCH_IF (~%index%~ > 0) BEGIN
+                        GET_STRREF ~%index%~ ~description~
+                        PATCH_IF (~%description%~ STRING_CONTAINS_REGEXP ~%twohanded%~) = 0 BEGIN
+                            SPRINT update ""
+                            INNER_PATCH_SAVE update ~%description%~ BEGIN
+                                REPLACE_TEXTUALLY EXACT_MATCH ~%twohanded%~ ~%onehanded%~
+                            END
+                            SAY_EVALUATED IDENTIFIED_DESC ~%update%~
+                        END
+                    END
+                END
+            IF_EXISTS BUT_ONLY
+        END
+        
+    END//WITH_TRA
+
+// ================================================== ================================================== ================================================== //
+
+BEGIN @300 DESIGNATED 300//Allow Mages to use and become proficient with light crossbows
+LABEL ~V1_CROSSBOW_MAGES~
+REQUIRE_COMPONENT "setup-SCI-Blades+Bolts.tp2" 200 @301
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-BB-setup.tra"
+    BEGIN//WITH_TRA
+
+        // Fetch relevant weapon array
+        COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
+            PATCH_IF (%SOURCE_SIZE% > 0x71) BEGIN
+                READ_BYTE 0x1c type
+                PATCH_IF (type = 27) || //CROSSBOW
+                         (type = 31) //CROSSBOW BOLTS
+                        BEGIN
+                    SPRINT $relevant_weapons(~%SOURCE_RES%~) ~%type%~
+                END
+            END
+        BUT_ONLY
+
+        // Allow Mage to use light crossbows and bolts
+        COPY_EXISTING ~xbow04.itm~ ~override~
+	        READ_LONG 0x08 light_identifier
+        BUT_ONLY
+        ACTION_PHP_EACH relevant_weapons AS weapon => type BEGIN
+            COPY_EXISTING ~%weapon%.itm~ ~override~
+                READ_BYTE 0x1f FighterUsability
+                PATCH_IF ((%FighterUsability% BOR 0b11110111) = 0b11110111) BEGIN // Check for Fighter as non-class specific weapon
+                    READ_BYTE 0x1c type
+                    READ_LONG 0x08 key_identifier
+                    PATCH_IF (key_identifier = %light_identifier% || type = 31) BEGIN
+                        WRITE_BYTE 0x20 (THIS BAND 0b11111011) //Mage
+                    END
+                END
+            IF_EXISTS BUT_ONLY
+        END
+
+        // Mage to become proficient in crossbows
+        COPY_EXISTING ~weapprof.2da~ ~override~
+            COUNT_2DA_COLS weapprof
+            // Get Crossbow column
+            FOR (row = 0; row < 51; row += 1) BEGIN             // Read all prof rows
+                READ_2DA_ENTRY row 0 weapprof prof              // Read prof names
+                PATCH_IF (~%prof%~ STRING_EQUAL_CASE "CROSSBOW") BEGIN
+                    SPRINT crossbow ~%row%~
+                END
+            END
+            // Mages & Kits
+            FOR (col = 4; col < weapprof; col += 1) BEGIN       // Read all prof cols
+                SET profmax = 0
+                SET equal = 0
+                FOR (row = 0; row < 51; row += 1) BEGIN         // Read all prof rows
+                    READ_2DA_ENTRY row 4 weapprof mage          // Read mage prof
+                    READ_2DA_ENTRY row col weapprof kit         // Read kit  prof
+                    PATCH_IF (%profmax% = 0) BEGIN
+                        SET profmax = %kit%                     // Set max pips to first non-zero
+                    END
+                    PATCH_IF (%mage% = %kit%) BEGIN
+                        SET equal += 1
+                        PATCH_IF (%equal% > 50) BEGIN           // All rows equal
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %crossbow% col %profmax%  // Set crossbow to max pips
+                        END
+                    END ELSE BEGIN
+                        SET row = 50
+                    END
+                END
+            END
+            SET_2DA_ENTRIES_NOW ~weapprof_change~ weapprof
+        BUT_ONLY
+
+        // Fancy table format
+        COPY_EXISTING ~weapprof.2da~ ~override~
+            REPLACE_TEXTUALLY ~^ID[ %TAB%]~ ~%TAB%%TAB%%TAB%%TAB%%TAB%%TAB%ID~
+        BUT_ONLY
+
+        // Update class description
+        COPY_EXISTING ~clastext.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            SPRINT search @3
+            SPRINT replace @4
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                PATCH_IF ~%class%~ STRING_EQUAL_CASE ~MAGE~ BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 4 ~offset_mage~
+                    GET_STRREF %offset_mage% ~description_mage~
+                    PATCH_IF (~%description_mage%~ STRING_CONTAINS_REGEXP ~%search%~) = 0 BEGIN
+                        INNER_PATCH_SAVE description_mage ~%description_mage%~ BEGIN
+                            REPLACE_TEXTUALLY ~%search%~ ~%replace%~
+                        END
+                    END
+                END
+                PATCH_IF ~%class%~ STRING_EQUAL_CASE ~SORCERER~ BEGIN
+                READ_2DA_ENTRY_FORMER rows row 4 ~offset_sorcerer~
+                    GET_STRREF %offset_sorcerer% ~description_sorcerer~
+                    PATCH_IF (~%description_sorcerer%~ STRING_CONTAINS_REGEXP ~%search%~) = 0 BEGIN
+                        INNER_PATCH_SAVE description_sorcerer ~%description_sorcerer%~ BEGIN
+                            REPLACE_TEXTUALLY ~%search%~ ~%replace%~
+                        END
+                    END
+                END
+            END
+        BUT_ONLY
+        STRING_SET_EVALUATE %offset_mage% ~%description_mage%~
+        STRING_SET_EVALUATE %offset_sorcerer% ~%description_sorcerer%~
+
+    END//WITH_TRA
+
+// ================================================== ================================================== ================================================== //
+
+BEGIN @410 DESIGNATED 410//Moderate expansion of Cleric weapon selection
+SUBCOMPONENT @0 // Cleric proficency options
+LABEL ~V1_MODERATE_CLERIC~
+REQUIRE_COMPONENT "setup-SCI-Blades+Bolts.tp2" 200 @411
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-BB-setup.tra"
+    BEGIN//WITH_TRA
+
+        // Fetch relevant weapon array
+        COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
+            PATCH_IF (%SOURCE_SIZE% > 0x71) BEGIN
+                READ_BYTE 0x1c type
+                PATCH_IF (type = 27) || //CROSSBOW
+                         (type = 31) || //CROSSBOW BOLTS
+                         (proficency = 106) //DART
+                        BEGIN
+                    SPRINT $relevant_weapons(~%SOURCE_RES%~) ~%type%~
+                END
+            END
+        BUT_ONLY
+
+        // Allow Clerics to use light crossbows, bolts and darts
+        COPY_EXISTING ~xbow01.itm~ ~override~
+	        READ_LONG 0x08 heavy_identifier
+        BUT_ONLY
+        COPY_EXISTING ~xbow04.itm~ ~override~
+	        READ_LONG 0x08 light_identifier
+        BUT_ONLY
+        ACTION_PHP_EACH relevant_weapons AS weapon => type BEGIN
+            COPY_EXISTING ~%weapon%.itm~ ~override~
+                READ_BYTE 0x1f FighterUsability
+                READ_BYTE 0x20 RangerUsability
+                // Patch Ranger/Cleric
+                PATCH_IF ((%RangerUsability% BOR 0b11011111) = 0b11011111) BEGIN // Check for Ranger access to specific weapon
+                    WRITE_BYTE 0x1f (THIS BAND 0b11111011)     //Cleric/Ranger
+                END
+                PATCH_IF ((%FighterUsability% BOR 0b11110111) = 0b11110111) BEGIN // Check for Fighter as non-class specific weapon
+                    READ_BYTE 0x1c type
+                    READ_LONG 0x08 key_identifier
+                    // Patch Base and Multiclass with light crossbow, bolts and darts
+                    PATCH_IF (type = 19 || key_identifier = %light_identifier% || type = 31) BEGIN // Check for light crossbow
+                        WRITE_BYTE 0x1e (THIS BAND 0b01111111) //Cleric
+                        WRITE_BYTE 0x1f (THIS BAND 0b11111110) //Cleric/Mage
+                        WRITE_BYTE 0x1f (THIS BAND 0b11111101) //Cleric/Thief
+                        WRITE_BYTE 0x1f (THIS BAND 0b10111111) //Fighter/Cleric
+                        WRITE_BYTE 0x1f (THIS BAND 0b01111111) //Fighter/Mage/Cleric
+                    END
+                    // Patch Fighter Multiclass with heavy crossbow
+                    PATCH_IF (key_identifier = %heavy_identifier%) BEGIN // Check for heavy crossbow
+                        WRITE_BYTE 0x1f (THIS BAND 0b10111111) //Fighter/Cleric
+                        WRITE_BYTE 0x1f (THIS BAND 0b01111111) //Fighter/Mage/Cleric
+                    END
+                END
+            IF_EXISTS BUT_ONLY
+        END
+
+        // Allow Clerics to become proficient in crossbows and darts
+        COPY_EXISTING ~weapprof.2da~ ~override~
+            COUNT_2DA_COLS weapprof
+            // Get Crossbow and Dart columns
+            FOR (row = 0; row < 51; row += 1) BEGIN             // Read all prof rows
+                READ_2DA_ENTRY row 0 weapprof prof              // Read prof names
+                PATCH_IF (~%prof%~ STRING_EQUAL_CASE "CROSSBOW") BEGIN
+                    SPRINT crossbow ~%row%~
+                END
+                PATCH_IF (~%prof%~ STRING_EQUAL_CASE "DART") BEGIN
+                    SPRINT dart ~%row%~
+                END
+            END
+            // Cleric & Kits
+            FOR (col = 4; col < weapprof; col += 1) BEGIN       // Read all prof cols
+                SET profmax = 0
+                SET equal = 0
+                FOR (row = 0; row < 51; row += 1) BEGIN         // Read all prof rows
+                    READ_2DA_ENTRY row 6 weapprof cleric        // Read cleric prof
+                    READ_2DA_ENTRY row col weapprof kit         // Read kit  prof
+                    PATCH_IF (%profmax% = 0) BEGIN
+                        SET profmax = %kit%                     // Set max pips to first non-zero
+                    END
+                    PATCH_IF (%cleric% = %kit%) BEGIN
+                        SET equal += 1
+                        PATCH_IF (%equal% > 50) BEGIN           // All rows equal
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %crossbow% col %profmax%  // Set crossbow to max pips
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %dart% col %profmax%  // Set dart to max pips
+                        END
+                    END ELSE BEGIN
+                        SET row = 50
+                    END
+                END
+            END
+            // Cleric Multiclasses
+            FOR (col = 4; col < weapprof; col += 1) BEGIN       // Read all prof cols
+                SET profmax = 0
+                SET equal = 0
+                FOR (row = 0; row < 51; row += 1) BEGIN         // Read all prof rows
+                    READ_2DA_ENTRY row 13 weapprof multi        // Read multi prof
+                    READ_2DA_ENTRY row col weapprof kit         // Read kit  prof
+                    PATCH_IF (%profmax% = 0) BEGIN
+                        SET profmax = %kit%                     // Set max pips to first non-zero
+                    END
+                    PATCH_IF (%multi% = %kit%) BEGIN
+                        SET equal += 1
+                        PATCH_IF (%equal% > 50) BEGIN           // All rows equal
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %crossbow% col %profmax%  // Set crossbow to max pips
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %dart% col %profmax%  // Set dart to max pips
+                        END
+                    END ELSE BEGIN
+                        SET row = 50
+                    END
+                END
+            END
+            SET_2DA_ENTRIES_NOW ~weapprof_change~ weapprof
+        BUT_ONLY
+
+        // Fancy table format
+        COPY_EXISTING ~weapprof.2da~ ~override~
+            REPLACE_TEXTUALLY ~^ID[ %TAB%]~ ~%TAB%%TAB%%TAB%%TAB%%TAB%%TAB%ID~
+        BUT_ONLY
+
+        // Update class description
+        COPY_EXISTING ~clastext.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                PATCH_IF ~%class%~ STRING_EQUAL_CASE ~CLERIC~ BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 4 ~offset~
+                    GET_STRREF %offset% ~description~
+                    SPRINT search @3
+                    SPRINT replace @5
+                    PATCH_IF (~%description%~ STRING_CONTAINS_REGEXP ~%search%~) = 0 BEGIN
+                        INNER_PATCH_SAVE description ~%description%~ BEGIN
+                            REPLACE_TEXTUALLY ~%search%~ ~%replace%~
+                        END
+                    END
+                    SPRINT search @11
+                    SPRINT replace @13
+                    PATCH_IF (~%description%~ STRING_CONTAINS_REGEXP ~%search%~) = 0 BEGIN
+                        INNER_PATCH_SAVE description ~%description%~ BEGIN
+                            REPLACE_TEXTUALLY ~%search%~ ~%replace%~
+                        END
+                    END
+                    SPRINT search @12
+                    SPRINT replace @14
+                    PATCH_IF (~%description%~ STRING_CONTAINS_REGEXP ~%search%~) = 0 BEGIN
+                        INNER_PATCH_SAVE description ~%description%~ BEGIN
+                            REPLACE_TEXTUALLY ~%search%~ ~%replace%~
+                        END
+                    END
+                END
+            END
+        BUT_ONLY
+        STRING_SET_EVALUATE %offset% ~%description%~
+
+    END//WITH_TRA
+
+// ================================================== ================================================== ================================================== //
+
+BEGIN @420 DESIGNATED 420//Generous expansion of Cleric weapon selection
+SUBCOMPONENT @0 // Cleric proficency options
+LABEL ~V1_GENEROUS_CLERIC~
+REQUIRE_COMPONENT "setup-SCI-Blades+Bolts.tp2" 200 @421
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-BB-setup.tra"
+    BEGIN//WITH_TRA
+
+        // Fetch relevant weapon array
+        COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
+            PATCH_IF (%SOURCE_SIZE% > 0x71) BEGIN
+                READ_BYTE 0x1c type
+                READ_BYTE 0x31 proficency
+                PATCH_IF (type = 27) || //CROSSBOW
+                         (type = 31) || //CROSSBOW BOLTS
+                         (proficency = 89) || //BASTARDSWORD
+                         (proficency = 90) || //LONGSWORD
+                         (proficency = 91) || //SHORTSWORD
+                         (proficency = 93) || //TWOHANDEDSWORD
+                         (proficency = 96) || //DAGGER
+                         (proficency = 106) //DART
+                        BEGIN
+                    SPRINT $relevant_weapons(~%SOURCE_RES%~) ~%type%~
+                END
+            END
+        BUT_ONLY
+
+        // Allow Clerics to use light crossbows, bolts and darts, daggers, short-, long-, bastard- and two-handed swords
+        COPY_EXISTING ~xbow01.itm~ ~override~
+	        READ_LONG 0x08 heavy_identifier
+        BUT_ONLY
+        COPY_EXISTING ~xbow04.itm~ ~override~
+	        READ_LONG 0x08 light_identifier
+        BUT_ONLY
+        ACTION_PHP_EACH relevant_weapons AS weapon => type BEGIN
+            COPY_EXISTING ~%weapon%.itm~ ~override~
+                READ_BYTE 0x1f FighterUsability
+                READ_BYTE 0x20 RangerUsability
+                // Patch Ranger/Cleric
+                PATCH_IF ((%RangerUsability% BOR 0b11011111) = 0b11011111) BEGIN // Check for Ranger access to specific weapon
+                    WRITE_BYTE 0x1f (THIS BAND 0b11111011)     //Cleric/Ranger
+                END
+                PATCH_IF ((%FighterUsability% BOR 0b11110111) = 0b11110111) BEGIN // Check for Fighter as non-class specific weapon
+                    READ_LONG 0x08 key_identifier
+                    READ_BYTE 0x31 proficency
+                    // Patch Base and Multiclass with light crossbow, bolts, darts, daggers, short and long sword
+                    PATCH_IF !(key_identifier = %heavy_identifier% || (proficency = 89) || (proficency = 93)) BEGIN // Check for heavy weapons
+                        WRITE_BYTE 0x1e (THIS BAND 0b01111111) //Cleric
+                        WRITE_BYTE 0x1f (THIS BAND 0b11111110) //Cleric/Mage
+                        WRITE_BYTE 0x1f (THIS BAND 0b11111101) //Cleric/Thief
+                        WRITE_BYTE 0x1f (THIS BAND 0b10111111) //Fighter/Cleric
+                        WRITE_BYTE 0x1f (THIS BAND 0b01111111) //Fighter/Mage/Cleric
+                    END
+                    // Patch Fighter Multiclass with heavy crossbow, bastard and two-handed sword
+                    PATCH_IF (key_identifier = %heavy_identifier% || (proficency = 89) || (proficency = 93)) BEGIN // Check for heavy weapons
+                        WRITE_BYTE 0x1f (THIS BAND 0b10111111) //Fighter/Cleric
+                        WRITE_BYTE 0x1f (THIS BAND 0b01111111) //Fighter/Mage/Cleric
+                    END
+                END
+            IF_EXISTS BUT_ONLY
+        END
+
+        // Allow Clerics to become proficient in crossbows, bolts and darts, daggers, short and long sword. Multi also get bastard and two-handed swords
+        COPY_EXISTING ~weapprof.2da~ ~override~
+            COUNT_2DA_COLS weapprof
+            // Get Crossbow and Dart columns
+            FOR (row = 0; row < 51; row += 1) BEGIN             // Read all prof rows
+                READ_2DA_ENTRY row 0 weapprof prof              // Read prof names
+                PATCH_IF (~%prof%~ STRING_EQUAL_CASE "CROSSBOW") BEGIN
+                    SPRINT crossbow ~%row%~
+                END
+                PATCH_IF (~%prof%~ STRING_EQUAL_CASE "DART") BEGIN
+                    SPRINT dart ~%row%~
+                END
+                PATCH_IF (~%prof%~ STRING_EQUAL_CASE "DAGGER") BEGIN
+                    SPRINT dagger ~%row%~
+                END
+                PATCH_IF (~%prof%~ STRING_EQUAL_CASE "SHORTSWORD") BEGIN
+                    SPRINT short ~%row%~
+                END
+                PATCH_IF (~%prof%~ STRING_EQUAL_CASE "LONGSWORD") BEGIN
+                    SPRINT long ~%row%~
+                END
+                PATCH_IF (~%prof%~ STRING_EQUAL_CASE "BASTARDSWORD") BEGIN
+                    SPRINT bastard ~%row%~
+                END
+                PATCH_IF (~%prof%~ STRING_EQUAL_CASE "TWOHANDEDSWORD") BEGIN
+                    SPRINT twohanded ~%row%~
+                END
+            END
+            // Cleric & Kits
+            FOR (col = 4; col < weapprof; col += 1) BEGIN       // Read all prof cols
+                SET profmax = 0
+                SET equal = 0
+                FOR (row = 0; row < 51; row += 1) BEGIN         // Read all prof rows
+                    READ_2DA_ENTRY row 6 weapprof cleric        // Read cleric prof
+                    READ_2DA_ENTRY row col weapprof kit         // Read kit  prof
+                    PATCH_IF (%profmax% = 0) BEGIN
+                        SET profmax = %kit%                     // Set max pips to first non-zero
+                    END
+                    PATCH_IF (%cleric% = %kit%) BEGIN
+                        SET equal += 1
+                        PATCH_IF (%equal% > 50) BEGIN           // All rows equal
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %crossbow% col %profmax%  // Set crossbow to max pips
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %dart% col %profmax%  // Set dart to max pips
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %dagger% col %profmax%  // Set dagger to max pips
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %short% col %profmax%  // Set shortsword to max pips
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %long% col %profmax%  // Set longsword to max pips
+                        END
+                    END ELSE BEGIN
+                        SET row = 50
+                    END
+                END
+            END
+            // Cleric Multiclasses
+            FOR (col = 4; col < weapprof; col += 1) BEGIN       // Read all prof cols
+                SET profmax = 0
+                SET equal = 0
+                FOR (row = 0; row < 51; row += 1) BEGIN         // Read all prof rows
+                    READ_2DA_ENTRY row 13 weapprof multi        // Read multi prof
+                    READ_2DA_ENTRY row col weapprof kit         // Read kit  prof
+                    PATCH_IF (%profmax% = 0) BEGIN
+                        SET profmax = %kit%                     // Set max pips to first non-zero
+                    END
+                    PATCH_IF (%multi% = %kit%) BEGIN
+                        SET equal += 1
+                        PATCH_IF (%equal% > 50) BEGIN           // All rows equal
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %crossbow% col %profmax%  // Set crossbow to max pips
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %dart% col %profmax%  // Set dart to max pips
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %dagger% col %profmax%  // Set dagger to max pips
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %short% col %profmax%  // Set short sword to max pips
+                            SET_2DA_ENTRY_LATER ~weapprof_change~ %long% col %profmax%  // Set long sword to max pips
+                            PATCH_IF (%profmax% > 1) BEGIN          // Fighter multi class
+                                SET_2DA_ENTRY_LATER ~weapprof_change~ %bastard% col %profmax%  // Set bastard sword to max pips
+                                SET_2DA_ENTRY_LATER ~weapprof_change~ %twohanded% col %profmax%  // Set two-handed sword to max pips
+                            END
+                        END
+                    END ELSE BEGIN
+                        SET row = 50
+                    END
+                END
+            END
+            SET_2DA_ENTRIES_NOW ~weapprof_change~ weapprof
+        BUT_ONLY
+
+        // Fancy table format
+        COPY_EXISTING ~weapprof.2da~ ~override~
+            REPLACE_TEXTUALLY ~^ID[ %TAB%]~ ~%TAB%%TAB%%TAB%%TAB%%TAB%%TAB%ID~
+        BUT_ONLY
+
+        // Update class description
+        COPY_EXISTING ~clastext.2da~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~class~
+                PATCH_IF ~%class%~ STRING_EQUAL_CASE ~CLERIC~ BEGIN
+                    READ_2DA_ENTRY_FORMER rows row 4 ~offset~
+                    GET_STRREF %offset% ~description~
+                    SPRINT search @3
+                    SPRINT replace @5
+                    PATCH_IF (~%description%~ STRING_CONTAINS_REGEXP ~%search%~) = 0 BEGIN
+                        INNER_PATCH_SAVE description ~%description%~ BEGIN
+                            REPLACE_TEXTUALLY ~%search%~ ~%replace%~
+                        END
+                    END
+                    SPRINT search @6
+                    SPRINT replace @7
+                    PATCH_IF (~%description%~ STRING_CONTAINS_REGEXP ~%search%~) = 0 BEGIN
+                        INNER_PATCH_SAVE description ~%description%~ BEGIN
+                            REPLACE_TEXTUALLY ~%search%~ ~%replace%~
+                        END
+                    END
+                    SPRINT search @11
+                    SPRINT replace @13
+                    PATCH_IF (~%description%~ STRING_CONTAINS_REGEXP ~%search%~) = 0 BEGIN
+                        INNER_PATCH_SAVE description ~%description%~ BEGIN
+                            REPLACE_TEXTUALLY ~%search%~ ~%replace%~
+                        END
+                    END
+                    SPRINT search @12
+                    SPRINT replace @15
+                    PATCH_IF (~%description%~ STRING_CONTAINS_REGEXP ~%search%~) = 0 BEGIN
+                        INNER_PATCH_SAVE description ~%description%~ BEGIN
+                            REPLACE_TEXTUALLY ~%search%~ ~%replace%~
+                        END
+                    END
+                END
+            END
+        BUT_ONLY
+        STRING_SET_EVALUATE %offset% ~%description%~
+
+    END//WITH_TRA
+
+/*
+BEGIN @500 DESIGNATED 500//Disable all Clerics to become proficient with any two-handed weapons and the associated fighting style (including Quaterstaff)
+LABEL ~V1_CLERIC_NO_THW~
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-BB-setup.tra"
+    BEGIN//WITH_TRA
+
+        // Fetch relevant weapon array
+        COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
+            PATCH_IF (%SOURCE_SIZE% > 0x71) BEGIN
+                READ_BYTE 0x31 proficency
+                PATCH_IF (proficency = 89) || //BASTARDSWORD
+                        (proficency = 90) || //LONGSWORD
+                        //(proficency = 91) || //SHORTSWORD
+                        //(proficency = 92) || //AXE
+                        (proficency = 93)// || //TWOHANDEDSWORD
+                        //(proficency = 94) || //KATANA
+                        //(proficency = 95) || //SCIMITARWAKISASHININJATO
+                        //(proficency = 96) || //DAGGER
+                        //(proficency = 97) || //WARHAMMER
+                        //(proficency = 98) || //SPEAR
+                        //(proficency = 99) || //HALBERD
+                        //(proficency = 100) || //FLAILMORNINGSTAR
+                        //(proficency = 101) || //MACE
+                        //(proficency = 102) || //QUARTERSTAFF
+                        //(proficency = 103) || //CROSSBOW
+                        //(proficency = 104) || //LONGBOW
+                        //(proficency = 105) || //SHORTBOW
+                        //(proficency = 106) || //DART
+                        //(proficency = 107) || //SLING
+                        //(proficency = 111) || //2HANDED
+                        //(proficency = 112) || //SWORDANDSHIELD
+                        //(proficency = 113) || //SINGLEWEAPON
+                        //(proficency = 114) || //2WEAPON
+                        //(proficency = 115) //CLUB
+                        BEGIN
+                    SPRINT $relevant_weapons(~%SOURCE_RES%~) ~%proficency%~
+                END
+            END
+        BUT_ONLY
+
+        // Remove proficency of two-handed weapons for CLERIC = 6
+        COPY_EXISTING ~weapprof.2da~ ~override~
+            COUNT_2DA_COLS weapprof
+            SET_2DA_ENTRY_LATER ~weapprof_change~ 12 6 0 //TWOHANDEDSWORD
+            SET_2DA_ENTRY_LATER ~weapprof_change~ 22 6 0 //QUARTERSTAFF
+            SET_2DA_ENTRY_LATER ~weapprof_change~ 28 6 0 //2HANDED
+            SET_2DA_ENTRIES_NOW ~weapprof_change~ weapprof
+        BUT_ONLY
+
+        COPY_EXISTING ~weapprof.2da~ ~override~
+            REPLACE_TEXTUALLY ~^ID[ %TAB%]~ ~%TAB%%TAB%%TAB%%TAB%%TAB%%TAB%ID~
+        BUT_ONLY
+            
+    END//WITH_TRA
+
+BEGIN @400 DESIGNATED 350//Rename name Cleric's Staff +3 Description "This simple staff radiates a powerful enchantment, though its plain design suggests a simple origin. It reflects the quiet strength that faith brings, and was likely the modest weapon of a priest or cleric."
+LABEL ~V1_BLESSED_STAFF~
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-BB-setup.tra"
+    BEGIN//WITH_TRA
+
+
+    END//WITH_TRA
+
+BEGIN @450 DESIGNATED 350//Rename name Cleric's Staff +3 Description "This simple staff radiates a powerful enchantment, though its plain design suggests a simple origin. It reflects the quiet strength that faith brings, and was likely the modest weapon of a priest or cleric."
+LABEL ~V1_MONK_STAFF~
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-BB-setup.tra"
+    BEGIN//WITH_TRA
+
+
+    END//WITH_TRA
+*/

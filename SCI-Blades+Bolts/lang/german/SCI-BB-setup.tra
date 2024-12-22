@@ -1,0 +1,40 @@
+@100=~Universelle Munition - ausrüstbar von allen Klassen~
+
+@200=~Einhändige leichte Armbrüste - verwendbar mit Schilden~
+
+@300=~Ermöglicht allen Magiern die Verwendung und Übung in leichten Armbrüstens~
+@301=~Diese Komponente erfordert 'Einhändige leichte Armbrüste - verwendbar mit Schilden'~
+
+@0=~Kleriker-Waffenerweiterung~
+
+@400=~Ethos: Schild des Glaubens - kann keine exotischen oder zweihändigen Waffen verwenden.
+    Beschränkung auf alle leichten einhändigen Waffen, in Klassenkombination Erweiterung auf schwere einhändige Waffen~
+@401=~Diese Komponente erfordert 'Einhändige leichte Armbrüste - verwendbar mit Schilden'~
+
+@410=~Ermöglicht allen Klerikern die Verwendung und Übung mit leichten Armbrüsten und Wurfpfeilen -
+    Klassenkombination can Zugriff auf schwere Armbrüste erhalten~
+@411=~Diese Komponente erfordert 'Einhändige leichte Armbrüste - verwendbar mit Schilden'~
+
+@420=~Ermöglicht allen Klerikern die Verwendung und Übung mit leichten Armbrüsten, Wurfpfeilen und geraden Schwertern -
+    Klassenkombination kann Zugriff auf schwere Armbrüste, Bastard- und Zweihänder erhalten~
+@421=~Diese Komponente erfordert 'Einhändige leichte Armbrüste - verwendbar mit Schilden'~
+
+@1=~Typ: 1-händig~
+@2=~Typ: 2-händig~
+@3=~Kampfstab~
+@4=~Kampfstab, Armbrust~
+@5=~Kampfstab, Armbrust, Wurfpfeil~
+@6=~Kriegshammer~
+@7=~Langschwert, Kurzschwert, Dolch, Kriegshammer~
+@8=~kann nur mit Kriegshammer, Keule, Flegel, Streitkolben, Kampfstab und Schleuder kämpfen (keine Stich- und Klingenwaffen)~
+@9=~kann nur mit Kriegshammer, Keule, Streitkolben, Langschwert, Kurzschwert, Armbrust und Schleuder kämpfen~
+@10=~
+– kann entsprechend dem Schild-des-Glaubens Ethos keine exotischen oder zweihändigen Waffen verwenden~
+@11=~(keine Stich- ~
+@12=~und Klingenwaffen)~
+@13=~~
+@14=~~
+@15=~
+– kann als Klassenkombination mit einer Kriegerklasse zusätzlich nur mit Zweihänder, Bastardschwert und schwerer Armbrust kämpfen~
+@16=~Kampfstilen~
+@17=~Kampfstilen, ausgenommen Zweihänder-Kampfstil,~

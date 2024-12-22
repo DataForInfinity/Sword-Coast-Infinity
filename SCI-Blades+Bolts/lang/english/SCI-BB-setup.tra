@@ -1,0 +1,40 @@
+@100=~Universal ammunition - equippable by all classes~
+
+@200=~One-handed light crossbows - usable with shields~
+
+@300=~Enable Mages and all their kits to use and become proficient with light crossbows~
+@301=~This component requires 'One-handed light crossbows - usable with shields' to be installed~
+
+@0=~Cleric Proficiency Expansion~
+
+@400=~Cleric Ethos: Shield of Faith - can not use any exotic or two-handed weapon.
+    Single class can use only light one-handed weapons, multi classes may gain access to heavy one-handed weapons~
+@401=~This component requires 'One-handed light crossbows - usable with shields' to be installed~
+
+@410=~Enable Clerics and related kits to use and become proficient with light crossbows and darts -
+    Cleric multi classes may gain access to heavy crossbows~
+@411=~This component requires 'One-handed light crossbows - usable with shields' to be installed~
+
+@420=~Enable Clerics and related kits to use and become proficient with light crossbows, darts and straight blades -
+    Cleric multi classes may gain access to heavy crossbows, bastard and two-handed swords~
+@421=~This component requires 'One-handed light crossbows - usable with shields' to be installed~
+
+@1=~Type: One-handed~
+@2=~Type: Two-handed~
+@3=~quarterstaff~
+@4=~quarterstaff, crossbow~
+@5=~quarterstaff, crossbow, dart~
+@6=~war hammer~
+@7=~long sword, short sword, dagger, war hammer~
+@8=~May only use non-bladed, non-Piercing weapons (war hammer, club, flail, mace, quarterstaff, sling).~
+@9=~May only use the following weapons: war hammer, club, mace, long sword, short sword, crossbow, sling.~
+@10=~
+– Following the Shield of Faith ethos may not use any exotic or two-handed weapons.~
+@11=~non-bladed, non-Piercing weapons (~
+@12=~).$~
+@13=~the following weapons: ~
+@14=~.~
+@15=~.
+– May only use the following weapons in addition as warrior multi class: two-handed sword, bastard sword and heavy crossbow.~
+@16=~fighting style.~
+@17=~fighting style, except Two-Handed Weapon Style.~
