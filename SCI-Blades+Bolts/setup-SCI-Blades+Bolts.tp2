@@ -46,6 +46,7 @@ REQUIRE_PREDICATE (GAME_IS ~BGEE BG2EE IWDEE EET~) ~Skipping: Only EE Games Supp
                     WRITE_BYTE 0x1f (THIS BAND 0b00000000) //Byte 2 classes
                     WRITE_BYTE 0x20 (THIS BAND 0b10000000) //Byte 3 classes
                     WRITE_BYTE 0x21 (THIS BAND 0b10011111) //Byte 4 classes
+                    LPF DELETE_ITEM_EQEFFECT INT_VAR opcode_to_delete = 319 END // Remove any opcode "Restrict item" (139) to allow Druids the use of arrows
                 END
             IF_EXISTS BUT_ONLY
         END
