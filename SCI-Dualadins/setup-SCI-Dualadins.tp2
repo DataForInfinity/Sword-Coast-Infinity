@@ -2,7 +2,7 @@ BACKUP ~weidu_external/backup/SCI-Dualadins~
 AUTHOR ~AvA (https://www.nexusmods.com/baldursgate/mods/75)~
 AUTO_EVAL_STRINGS
 
-VERSION ~v2.0~
+VERSION ~v2.1~
 
 ALWAYS
     INCLUDE ~%MOD_FOLDER%/lib/a7#add_kit_ex.tpa~
@@ -58,7 +58,11 @@ REQUIRE_PREDICATE (GAME_IS ~BGEE BG2EE IWDEE EET~) ~Skipping: Only EE Games Supp
                 PATCH_IF ~%class%~ STRING_EQUAL_CASE ~PALADIN~ BEGIN
                     READ_2DA_ENTRY_FORMER rows row 4 ~Description~
                     READ_2DA_ENTRY_FORMER rows row 8 ~BriefDescription~
-                    READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                    PATCH_IF cols > 9 BEGIN
+                        READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                    END ELSE BEGIN
+                        SET FallenNotice = 0
+                    END
                 END
             END
         BUT_ONLY
@@ -139,23 +143,27 @@ REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 100 @150100
                 PATCH_IF ~%class%~ STRING_EQUAL_CASE ~CAVALIER~ BEGIN
                     READ_2DA_ENTRY_FORMER rows row 4 ~Description~
                     READ_2DA_ENTRY_FORMER rows row 8 ~BriefDescription~
-                    READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                    PATCH_IF cols > 9 BEGIN
+                        READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                    END ELSE BEGIN
+                        SET FallenNotice = 0
+                    END
                 END
             END
         BUT_ONLY
-
+/*
         //For obscure reasons mod "DUAL_TO_KIT" v0.35 will not work on pseudo kits sharing the same description as a true Paladin kit
         ACTION_GET_STRREF %Description% ~help~
         //Generate fail safe new help index to patch "DUAL_TO_KIT" v0.35 compatibility
         OUTER_SET PseudoHelp = RESOLVE_STR_REF (~%help%~^~ ~)
-
+*/
         //Create pseudo Cavalier as Ranger kit
         LAF ADD_KIT_EX
             INT_VAR
                 kit_class   = 12 // Ranger
                 visible     = 0 // Character creation
                 mixed       = RESOLVE_STR_REF (@2)
-                help        = %PseudoHelp%
+                help        = %Description%
                 briefdesc   = ~%BriefDescription%~
                 fallen_notice=~%FallenNotice%~
             STR_VAR
@@ -192,23 +200,27 @@ REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 100 @150100
                 PATCH_IF ~%class%~ STRING_EQUAL_CASE ~INQUISITOR~ BEGIN
                     READ_2DA_ENTRY_FORMER rows row 4 ~Description~
                     READ_2DA_ENTRY_FORMER rows row 8 ~BriefDescription~
-                    READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                    PATCH_IF cols > 9 BEGIN
+                        READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                    END ELSE BEGIN
+                        SET FallenNotice = 0
+                    END
                 END
             END
         BUT_ONLY
-
+/*
         //For obscure reasons mod "DUAL_TO_KIT" v0.35 will not work on pseudo kits sharing the same description as a true Paladin kit
         ACTION_GET_STRREF %Description% ~help~
         //Generate fail safe new help index to patch "DUAL_TO_KIT" v0.35 compatibility
         OUTER_SET PseudoHelp = RESOLVE_STR_REF (~%help%~^~ ~)
-
+*/
         //Create pseudo Inquisitor as Ranger kit
         LAF ADD_KIT_EX
             INT_VAR
                 kit_class   = 12 // Ranger
                 visible     = 0 // Character creation
                 mixed       = RESOLVE_STR_REF (@3)
-                help        = %PseudoHelp%
+                help        = %Description%
                 briefdesc   = ~%BriefDescription%~
                 fallen_notice=~%FallenNotice%~
             STR_VAR
@@ -245,23 +257,27 @@ REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 100 @150100
                 PATCH_IF ~%class%~ STRING_EQUAL_CASE ~UNDEAD_HUNTER~ BEGIN
                     READ_2DA_ENTRY_FORMER rows row 4 ~Description~
                     READ_2DA_ENTRY_FORMER rows row 8 ~BriefDescription~
-                    READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                    PATCH_IF cols > 9 BEGIN
+                        READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                    END ELSE BEGIN
+                        SET FallenNotice = 0
+                    END
                 END
             END
         BUT_ONLY
-
+/*
         //For obscure reasons mod "DUAL_TO_KIT" v0.35 will not work on pseudo kits sharing the same description as a true Paladin kit
         ACTION_GET_STRREF %Description% ~help~
         //Generate fail safe new help index to patch "DUAL_TO_KIT" v0.35 compatibility
         OUTER_SET PseudoHelp = RESOLVE_STR_REF (~%help%~^~ ~)
-
+*/
         //Create pseudo Undead Hunter as Ranger kit
         LAF ADD_KIT_EX
             INT_VAR
                 kit_class   = 12 // Ranger
                 visible     = 0 // Character creation
                 mixed       = RESOLVE_STR_REF (@4)
-                help        = %PseudoHelp%
+                help        = %Description%
                 briefdesc   = ~%BriefDescription%~
                 fallen_notice=~%FallenNotice%~
             STR_VAR
@@ -310,23 +326,27 @@ REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 150 @200150
                 PATCH_IF ~%class%~ STRING_EQUAL_CASE ~BLACKGUARD~ BEGIN
                     READ_2DA_ENTRY_FORMER rows row 4 ~Description~
                     READ_2DA_ENTRY_FORMER rows row 8 ~BriefDescription~
-                    READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                    PATCH_IF cols > 9 BEGIN
+                        READ_2DA_ENTRY_FORMER rows row 9 ~FallenNotice~
+                    END ELSE BEGIN
+                        SET FallenNotice = 0
+                    END
                 END
             END
         BUT_ONLY
-
+/*
         //For obscure reasons mod "DUAL_TO_KIT" v0.35 will not work on pseudo kits sharing the same description as a true Paladin kit
         ACTION_GET_STRREF %Description% ~help~
         //Generate fail safe new help index to patch "DUAL_TO_KIT" v0.35 compatibility
         OUTER_SET PseudoHelp = RESOLVE_STR_REF (~%help%~^~ ~)
-
+*/
         //Create pseudo Blackguard as Ranger kit
         LAF ADD_KIT_EX
             INT_VAR
                 kit_class   = 12 // Ranger
                 visible     = 0 // Character creation
                 mixed       = RESOLVE_STR_REF (@5)
-                help        = %PseudoHelp%
+                help        = %Description%
                 briefdesc   = ~%BriefDescription%~
                 fallen_notice=~%FallenNotice%~
             STR_VAR
@@ -416,27 +436,7 @@ REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 300 @350300
                     READ_BYTE 0x1f RangerClericUsability
                     PATCH_IF ((%RangerClericUsability% BOR 0b11111011) = 0b11111011) BEGIN //If Ranger/Cleric can use item
                         READ_BYTE 0x31 proficency
-                        PATCH_IF (proficency = 89)  || //BASTARDSWORD
-                                (proficency = 90)  || //LONGSWORD
-                                (proficency = 91)  || //SHORTSWORD
-                                (proficency = 92)  || //AXE
-                                (proficency = 93)  || //TWOHANDEDSWORD
-                                (proficency = 94)  || //KATANA
-                                (proficency = 95)  || //SCIMITARWAKISASHININJATO
-                                (proficency = 96)  || //DAGGER
-                                (proficency = 97)  || //WARHAMMER
-                                (proficency = 98)  || //SPEAR
-                                (proficency = 99)  || //HALBERD
-                                (proficency = 100) || //FLAILMORNINGSTAR
-                                (proficency = 101) || //MACE
-                                (proficency = 102) || //QUARTERSTAFF
-                                (proficency = 103) || //CROSSBOW
-                                (proficency = 104) || //LONGBOW
-                                (proficency = 105) || //SHORTBOW
-                                (proficency = 106) || //DART
-                                (proficency = 107) || //SLING
-                                (proficency = 115)    //CLUB
-                                BEGIN
+                        PATCH_IF (proficency > 0) BEGIN
                             SPRINT $relevantWeapons(~%SOURCE_RES%~) ~%proficency%~
                         END
                     END
@@ -458,6 +458,7 @@ REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 300 @350300
                         PATCH_IF (%canUse% = 0) BEGIN
                             READ_BYTE 0x1f RangerClericUsability
                             WRITE_BYTE 0x1f (%RangerClericUsability% BOR 0b00000100)
+                            //PATCH_PRINT ~%weapon%.itm~
                         END
                     END
                 END
@@ -514,17 +515,20 @@ REQUIRE_COMPONENT "setup-SCI-Dualadins.tp2" 400 @450400
             SPRINT $allItems(~%SOURCE_RES%~) ~%specific%~
         BUT_ONLY
 
-        // Ban lawful alignment on all Ranger items
+        // Ban lawful and evil alignments on all Ranger items
         ACTION_PHP_EACH allItems AS item => specific BEGIN
             COPY_EXISTING ~%item%.itm~ ~override~
-                READ_BYTE 0x1f FighterUsability
-                PATCH_IF ((%FighterUsability% BOR 0b11110111) != 0b11110111) BEGIN //If Fighter cannot use item
-                    READ_BYTE 0x20 RangerUsability
-                    PATCH_IF ((%RangerUsability% BOR 0b11011111) = 0b11011111) BEGIN //But Ranger can use item
-                        READ_BYTE 0x21 HumanUsability
-                        PATCH_IF ((%HumanUsability% BOR 0b11110111) = 0b11110111) BEGIN //And Humans can use item
-                            READ_BYTE 0x1e LawfulUsability
-                            WRITE_BYTE 0x1e (%LawfulUsability% BOR 0b00010000) //Ban Lawful alignment
+                READ_BYTE 0x20 FighterThiefUsability
+                PATCH_IF ((%FighterThiefUsability% BOR 0b11111101) != 0b11111101) BEGIN //If Fighter/Thief cannot use item
+                    READ_BYTE 0x1e ClericUsability
+                    PATCH_IF ((%ClericUsability% BOR 0b01111111) != 0b01111111) BEGIN //If Cleric cannot use item
+                        READ_BYTE 0x20 RangerUsability
+                        PATCH_IF ((%RangerUsability% BOR 0b11011111) = 0b11011111) BEGIN //But Ranger can use item
+                            READ_BYTE 0x21 HumanUsability
+                            PATCH_IF ((%HumanUsability% BOR 0b11110111) = 0b11110111) BEGIN //And Humans can use item
+                                READ_BYTE 0x1e LawfulUsability
+                                WRITE_BYTE 0x1e (%LawfulUsability% BOR 0b00010010) //Ban Lawful and evil alignments
+                            END
                         END
                     END
                 END

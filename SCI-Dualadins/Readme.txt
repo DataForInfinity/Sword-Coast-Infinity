@@ -2,11 +2,7 @@
 
 They said it was impossible. And technically they were right: there can be no true Paladin dual-class without braking your save game. But implementing the Paladin as a Ranger kit allows to dual-class perfectly normal! You create your Paladin character as usual and at level 2 can use anew ability to speak to your god and vow to become a cleric. If that bothers you, just tell him to stay away and your Paladin will be as if this mod was never installed. Oh, and if you did not intend to play a Paladin [charname], have I mentioned that Keldorn can make all other Clerics pale with awe?
 
--=Primary Contact=-
-For discussion and bug reports please visit:
-https://forums.beamdog.com/discussion/88726/mod-sword-coast-infinity-mod-series-bg-ee-bg2-ee-iwd-ee-and-eet
-
--=Download=-
+-=Primary Contact & Download=-
 Newest Version with detailed information to be found at:
 https://www.nexusmods.com/baldursgate/mods/75
 

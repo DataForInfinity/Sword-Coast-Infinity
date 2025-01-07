@@ -4,3 +4,10 @@ THEN
 	RESPONSE #100
 		StartDialog("V1IA_DC",LastSummonerOf(Myself))
 END
+
+IF
+	!Class(LastSummonerOf(Myself),PALADIN)
+THEN
+	RESPONSE #100
+		ApplySpellRES("V1IAXDC",LastSummonerOf(Myself)) DestroySelf() SmallWait(1)
+END

@@ -18,7 +18,7 @@
 @400=~Beschränkt die Nutzung von Paladin-Klassengegenständen durch Waldläufer/Kleriker indem Rechtschaffend Gut als Gesinnung für gute Gegenstände erforderlich wird~
 @400300=~Diese Komponente erfordert 'Ermöglicht dem Paladin/Kleriker die Verwendung aller Paladin-Klassengegenstände'~
 
-@450=~Verhindert die Nutzung der nicht zugehörigen Klassengegenstände durch Paladin/Kleriker und Waldläufer/Kleriker indem allen Waldläufern und ihren Gegenständen die Gesinnung rechtschaffend untersagt wird~
+@450=~Verhindert die Nutzung der nicht zugehörigen Klassengegenstände durch Paladin/Kleriker und Waldläufer/Kleriker indem allen Waldläufern und ihren Gegenständen die Gesinnung rechtschaffend als auch böse untersagt wird~
 @450400=~Diese Komponente erfordert eins von 'Beschränkt die Nutzung von Paladin-Klassengegenständen durch Waldläufer/Kleriker indem rechtschaffende Gesinnung für gute Gegenstände erforderlich wird'~
 
 @500=~Erlaubt die Gesinnung Absolut Neutral für alle Waldläufer als Kompensation des Verlusts der Gesinnung Rechtschaffend Gut~
