@@ -2,7 +2,7 @@ BACKUP ~weidu_external/backup/SCI-Blades+Bolts~
 AUTHOR ~AvA (https://www.nexusmods.com/baldursgate/mods/91)~
 AUTO_EVAL_STRINGS
 
-VERSION ~v1.0~
+VERSION ~v1.2~
 
 LANGUAGE
     ~English~
@@ -229,7 +229,7 @@ REQUIRE_COMPONENT "setup-SCI-Blades+Bolts.tp2" 200 @301
 // ================================================== ================================================== ================================================== //
 
 BEGIN @410 DESIGNATED 410//Moderate expansion of Cleric weapon selection
-SUBCOMPONENT @0 // Cleric proficency options
+SUBCOMPONENT @0 // Cleric proficiency options
 LABEL ~V1_MODERATE_CLERIC~
 REQUIRE_COMPONENT "setup-SCI-Blades+Bolts.tp2" 200 @411
 
@@ -241,9 +241,10 @@ REQUIRE_COMPONENT "setup-SCI-Blades+Bolts.tp2" 200 @411
         COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
             PATCH_IF (%SOURCE_SIZE% > 0x71) BEGIN
                 READ_BYTE 0x1c type
+                READ_BYTE 0x31 proficiency
                 PATCH_IF (type = 27) || //CROSSBOW
                          (type = 31) || //CROSSBOW BOLTS
-                         (proficency = 106) //DART
+                         (proficiency = 106) //DART
                         BEGIN
                     SPRINT $relevant_weapons(~%SOURCE_RES%~) ~%type%~
                 END
@@ -388,7 +389,7 @@ REQUIRE_COMPONENT "setup-SCI-Blades+Bolts.tp2" 200 @411
 // ================================================== ================================================== ================================================== //
 
 BEGIN @420 DESIGNATED 420//Generous expansion of Cleric weapon selection
-SUBCOMPONENT @0 // Cleric proficency options
+SUBCOMPONENT @0 // Cleric proficiency options
 LABEL ~V1_GENEROUS_CLERIC~
 REQUIRE_COMPONENT "setup-SCI-Blades+Bolts.tp2" 200 @421
 
@@ -400,15 +401,15 @@ REQUIRE_COMPONENT "setup-SCI-Blades+Bolts.tp2" 200 @421
         COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
             PATCH_IF (%SOURCE_SIZE% > 0x71) BEGIN
                 READ_BYTE 0x1c type
-                READ_BYTE 0x31 proficency
+                READ_BYTE 0x31 proficiency
                 PATCH_IF (type = 27) || //CROSSBOW
                          (type = 31) || //CROSSBOW BOLTS
-                         (proficency = 89) || //BASTARDSWORD
-                         (proficency = 90) || //LONGSWORD
-                         (proficency = 91) || //SHORTSWORD
-                         (proficency = 93) || //TWOHANDEDSWORD
-                         (proficency = 96) || //DAGGER
-                         (proficency = 106) //DART
+                         (proficiency = 89) || //BASTARDSWORD
+                         (proficiency = 90) || //LONGSWORD
+                         (proficiency = 91) || //SHORTSWORD
+                         (proficiency = 93) || //TWOHANDEDSWORD
+                         (proficiency = 96) || //DAGGER
+                         (proficiency = 106) //DART
                         BEGIN
                     SPRINT $relevant_weapons(~%SOURCE_RES%~) ~%type%~
                 END
@@ -432,9 +433,9 @@ REQUIRE_COMPONENT "setup-SCI-Blades+Bolts.tp2" 200 @421
                 END
                 PATCH_IF ((%FighterUsability% BOR 0b11110111) = 0b11110111) BEGIN // Check for Fighter as non-class specific weapon
                     READ_LONG 0x08 key_identifier
-                    READ_BYTE 0x31 proficency
+                    READ_BYTE 0x31 proficiency
                     // Patch Base and Multiclass with light crossbow, bolts, darts, daggers, short and long sword
-                    PATCH_IF !(key_identifier = %heavy_identifier% || (proficency = 89) || (proficency = 93)) BEGIN // Check for heavy weapons
+                    PATCH_IF !(key_identifier = %heavy_identifier% || (proficiency = 89) || (proficiency = 93)) BEGIN // Check for heavy weapons
                         WRITE_BYTE 0x1e (THIS BAND 0b01111111) //Cleric
                         WRITE_BYTE 0x1f (THIS BAND 0b11111110) //Cleric/Mage
                         WRITE_BYTE 0x1f (THIS BAND 0b11111101) //Cleric/Thief
@@ -442,7 +443,7 @@ REQUIRE_COMPONENT "setup-SCI-Blades+Bolts.tp2" 200 @421
                         WRITE_BYTE 0x1f (THIS BAND 0b01111111) //Fighter/Mage/Cleric
                     END
                     // Patch Fighter Multiclass with heavy crossbow, bastard and two-handed sword
-                    PATCH_IF (key_identifier = %heavy_identifier% || (proficency = 89) || (proficency = 93)) BEGIN // Check for heavy weapons
+                    PATCH_IF (key_identifier = %heavy_identifier% || (proficiency = 89) || (proficiency = 93)) BEGIN // Check for heavy weapons
                         WRITE_BYTE 0x1f (THIS BAND 0b10111111) //Fighter/Cleric
                         WRITE_BYTE 0x1f (THIS BAND 0b01111111) //Fighter/Mage/Cleric
                     END
@@ -593,38 +594,38 @@ LABEL ~V1_CLERIC_NO_THW~
         // Fetch relevant weapon array
         COPY_EXISTING_REGEXP GLOB ~^.+\.itm$~ ~override~
             PATCH_IF (%SOURCE_SIZE% > 0x71) BEGIN
-                READ_BYTE 0x31 proficency
-                PATCH_IF (proficency = 89) || //BASTARDSWORD
-                        (proficency = 90) || //LONGSWORD
-                        //(proficency = 91) || //SHORTSWORD
-                        //(proficency = 92) || //AXE
-                        (proficency = 93)// || //TWOHANDEDSWORD
-                        //(proficency = 94) || //KATANA
-                        //(proficency = 95) || //SCIMITARWAKISASHININJATO
-                        //(proficency = 96) || //DAGGER
-                        //(proficency = 97) || //WARHAMMER
-                        //(proficency = 98) || //SPEAR
-                        //(proficency = 99) || //HALBERD
-                        //(proficency = 100) || //FLAILMORNINGSTAR
-                        //(proficency = 101) || //MACE
-                        //(proficency = 102) || //QUARTERSTAFF
-                        //(proficency = 103) || //CROSSBOW
-                        //(proficency = 104) || //LONGBOW
-                        //(proficency = 105) || //SHORTBOW
-                        //(proficency = 106) || //DART
-                        //(proficency = 107) || //SLING
-                        //(proficency = 111) || //2HANDED
-                        //(proficency = 112) || //SWORDANDSHIELD
-                        //(proficency = 113) || //SINGLEWEAPON
-                        //(proficency = 114) || //2WEAPON
-                        //(proficency = 115) //CLUB
+                READ_BYTE 0x31 proficiency
+                PATCH_IF (proficiency = 89) || //BASTARDSWORD
+                        (proficiency = 90) || //LONGSWORD
+                        //(proficiency = 91) || //SHORTSWORD
+                        //(proficiency = 92) || //AXE
+                        (proficiency = 93)// || //TWOHANDEDSWORD
+                        //(proficiency = 94) || //KATANA
+                        //(proficiency = 95) || //SCIMITARWAKISASHININJATO
+                        //(proficiency = 96) || //DAGGER
+                        //(proficiency = 97) || //WARHAMMER
+                        //(proficiency = 98) || //SPEAR
+                        //(proficiency = 99) || //HALBERD
+                        //(proficiency = 100) || //FLAILMORNINGSTAR
+                        //(proficiency = 101) || //MACE
+                        //(proficiency = 102) || //QUARTERSTAFF
+                        //(proficiency = 103) || //CROSSBOW
+                        //(proficiency = 104) || //LONGBOW
+                        //(proficiency = 105) || //SHORTBOW
+                        //(proficiency = 106) || //DART
+                        //(proficiency = 107) || //SLING
+                        //(proficiency = 111) || //2HANDED
+                        //(proficiency = 112) || //SWORDANDSHIELD
+                        //(proficiency = 113) || //SINGLEWEAPON
+                        //(proficiency = 114) || //2WEAPON
+                        //(proficiency = 115) //CLUB
                         BEGIN
-                    SPRINT $relevant_weapons(~%SOURCE_RES%~) ~%proficency%~
+                    SPRINT $relevant_weapons(~%SOURCE_RES%~) ~%proficiency%~
                 END
             END
         BUT_ONLY
 
-        // Remove proficency of two-handed weapons for CLERIC = 6
+        // Remove proficiency of two-handed weapons for CLERIC = 6
         COPY_EXISTING ~weapprof.2da~ ~override~
             COUNT_2DA_COLS weapprof
             SET_2DA_ENTRY_LATER ~weapprof_change~ 12 6 0 //TWOHANDEDSWORD

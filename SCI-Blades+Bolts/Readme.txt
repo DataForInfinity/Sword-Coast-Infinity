@@ -38,3 +38,8 @@ The following components are mutually exclusive. Pick which range of weapons you
 	-> Clerics may only use the following weapons: LONG SWORD, SHORT SWORD, DAGGER, war hammer, club, flail, mace, quarterstaff, CROSSBOW, DART, sling.
 	+ Warrior multiclass clerics can also use heavy crossbows, bastard and two-handed swords
 	? Pick this if you want to have fun with dual and multi classes
+
+-=Changelog=-
+
+V1.2: Component [410] Fixed uninitialized variable to allow installation
+V1.1: Component [100] Hot fix so Druids too can holster arrows
