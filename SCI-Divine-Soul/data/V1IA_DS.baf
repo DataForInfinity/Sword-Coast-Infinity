@@ -1,0 +1,6 @@
+IF
+	NumTimesTalkedTo(0)
+THEN
+	RESPONSE #100
+		StartDialog("V1IA_DS",LastSummonerOf(Myself))
+END

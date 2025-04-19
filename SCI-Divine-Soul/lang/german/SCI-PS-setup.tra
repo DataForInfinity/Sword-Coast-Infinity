@@ -1,0 +1,87 @@
+@0=~Göttlicher Funke~
+@1=~Göttliche Seele~
+@2=~GÖTTLICHE SEELE: Göttliche Seelen sind mit dem angeborenen Talent für Magie eines Hexenmeisters gesegnet, das von einer göttlichen Quelle gespeist wird, die in ihrer Seele schimmert. Dies kann durch eine entfernte, jedoch mächtige Verbindung zu einem göttlichen Wesen zu Stande kommen, sei es durch Blutsbande oder eine uralte Prophezeiung, die sie zum auserwählten Träger der göttlichen Magie macht.
+
+VORTEILE:
+– kann göttliche Zauber von der Liste des Klerikers als zusätzliche arkane Zauber erlernen
+– kann mit den Zabern Wunden heilen einen zusätzlichen Trefferpunkt pro Grad wiederherstellen
+– kann einmal täglich Göttliche Gunst entsprechend dem Zauber Glück auf sich selbst wirken
+– kann einmalig Göttliche Ausrichtung wirken, um <PRO_HISHER> göttliche Quelle der Magie mit <PRO_HISHER> Gesinnung einzustimmen und einen entsprechenden, zusätzlichen Zauber des 1. Grades zu erhalten
+
+NACHTEILE:
+– kann je Stufe einen Zauber weniger pro Tag wirken~
+@3=~Ursprünglicher Geist~
+@4=~URSPRÜNGLICHER GEIST: Ursprüngliche Geister besitzen eine spirituelle Verbindung zum Land selbst, welches ihnen erlaubt, ihre natürliche Magie von ihm zu beziehen. Manche glauben, dass es sich bei ihnen um uralte Geister handelt, welche die Welt zum ersten Mal beschreiten. Dadurch nicht unbedingt weiser als andere, sind sie für gewöhnlich doch von ausgewogenerer Gesinnung.
+
+VORTEILE:
+– kann göttliche Zauber von der Liste des Druiden als zusätzliche arkane Zauber erlernen
+– kann einmal am Tag die Stimme der Uralten entsprechend des Zaubers Wortloses Zaubern wirken
+– kann den Zauber Verstricken als zusätzlichen arkanen Zauber des 1. Grades wirken
+– Immun gegen die Effekte des Zaubers Verstricken
+
+NACHTEILE:
+– kann je Stufe einen Zauber weniger pro Tag wirken
+– kann nur einer mindestens teilweise neutralen Gesinnung sein~
+@5=~URSPRÜNGLICHER GEIST: Ursprüngliche Geister besitzen eine spirituelle Verbindung zum Land selbst, welches ihnen erlaubt, ihre natürliche Magie von ihm zu beziehen. Manche glauben, dass es sich bei ihnen um uralte Geister handelt, welche die Welt zum ersten Mal beschreiten. Dadurch nicht unbedingt weiser als andere, sind sie für gewöhnlich doch von ausgewogenerer Gesinnung.
+
+VORTEILE:
+– kann göttliche Zauber von der Liste des Druiden als zusätzliche arkane Zauber erlernen
+– kann einmal am Tag die Stimme der Uralten entsprechend des Zaubers Wortloses Zaubern wirken
+– kann den Zauber Verstricken als zusätzlichen arkanen Zauber des 1. Grades wirken
+– Immun gegen die Effekte der Zauber Verstricken und Dornenwuchs
+
+NACHTEILE:
+– kann je Stufe einen Zauber weniger pro Tag wirken
+– kann nur einer mindestens teilweise neutralen Gesinnung sein~
+@6=~Göttliche Ausrichtung~
+@7=~Göttliche Ausrichtung
+
+Die Göttliche Seele kann die Quelle <PRO_HISHER> göttlichen Magie mit <PRO_HISHER> Gesinnung einstimmen und einen zusätzlichen Zauber erlernen, welcher nicht gegen die maximale Anzahl bekannter Zauber angerechnet wird.
+
+Gut: Furcht bannen
+Rechtschaffend: Segen
+Neutral: Heiligtum
+Chaos: Befehl
+Böse: Verderben~
+@8=~Göttliche Ausrichtung
+
+Die Göttliche Seele kann die Quelle <PRO_HISHER> göttlichen Magie mit <PRO_HISHER> Gesinnung einstimmen und einen zusätzlichen Zauber erlernen, welcher nicht gegen die maximale Anzahl bekannter Zauber angerechnet wird.
+
+Gut: Furcht bannen
+Rechtschaffend: Segen
+Neutral: Heiligtum
+Chaos: Fluch
+Böse: Verderben~
+
+@9=~Göttliche Gunst~
+@10=~Stimme der Uralten~
+@11=~Verstärktes~
+@12=~Göttliche Seele~
+@13=~Ursprünglicher Geist~
+
+@20=~*Ihr erblickt den göttlichen Funken in eurer Seele. Wenn er mit eurer Gesinnung in Einklang gebracht wird, könnt ihr tiefere Erkenntnisse erlangen, um seine Macht zu kanalisieren.*~
+@21=~Ich will eine Verkörperung des Guten sein.~
+@22=~Ich will eine Verkörperung der Ordnung sein.~
+@23=~Ich will eine Verkörperung des Gleichgewichts sein.~
+@24=~Ich will eine Verkörperung des Chaos sein.~
+@25=~Ich will eine Verkörperung des Bösen sein.~
+
+@30=~*Für einen kurzen Moment scheint eine himmlische Melodie zu erklingen.*~
+@31=~Ich fühle, wie mein persönlicher Ehrgeiz sich im reinen Guten auflöst.~
+
+@40=~*Für einen kurzen Moment scheint eine rhythmische Melodie zu erklingen.*~
+@41=~Ich fühle, wie sich die Windungen meines Gehirns in strikter Ordnung neu ausrichten.~
+
+@50=~*Für einen kurzen Moment scheint eine beruhigende Melodie zu erklingen.*~
+@51=~Ich fühle, wie mein Geist die Gelassenheit wahrer Neutralität annimmt.~
+
+@60=~*Für einen kurzen Moment scheint eine misstönende Melodie zu erklingen.*~
+@61=~Ich fühle, wie das Chaos durch meine Adern wallt.~
+
+@70=~*Für einen kurzen Moment scheint eine bedrückende Melodie zu erklingen.*~
+@71=~Ich fühle, wie mein Herz vom Bösen durchtränkt wird.~
+
+@81=~Ich erkenne jetzt, dass ich bereits in völligem Einklang bin.*~
+@82=~Ich bin bereits, was ich noch zu werden glaubte.~
+
+@90=~*Eure Sinne kehren in die Welt um euch herum zurück.*~

@@ -1,0 +1,554 @@
+BACKUP ~weidu_external/backup/SCI-Divine-Soul~
+AUTHOR ~AvA (https://www.nexusmods.com/baldursgate/mods/97)~
+AUTO_EVAL_STRINGS
+
+VERSION ~v1.0~
+
+ALWAYS
+    ACTION_IF ((FILE_EXISTS ~dlc/sod-dlc.zip~) OR (FILE_EXISTS ~sod-dlc.zip~)) THEN BEGIN FAIL ~DLC Merger required for modding Siege of Dragonspear, visit:
+    https://github.com/Argent77/A7-DlcMerger/releases~ END // DLC Merger check
+
+    INCLUDE ~%MOD_FOLDER%/lib/ClassSpellTool.TPA~
+    INCLUDE ~%MOD_FOLDER%/lib/a7#add_kit_ex.tpa~
+END
+
+LANGUAGE
+    ~English~
+    ~english~
+    "%MOD_FOLDER%/lang/english/SCI-DS-setup.tra"
+LANGUAGE
+    ~Deutsch~
+    ~german~
+    "%MOD_FOLDER%/lang/german/SCI-DS-setup.tra"
+
+// ================================================== ================================================== ================================================== //
+
+BEGIN @100 DESIGNATED 100//Arcane versions of divine spells
+LABEL V1_ARCANE_DIVINE_SPELLS
+REQUIRE_PREDICATE (GAME_IS ~BGEE BG2EE IWDEE EET~) ~Skipping: Only EE Games Supported~
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PS-setup.tra"
+    BEGIN//WITH_TRA
+
+        //Clone cleric spells as arcane spells
+        //LAF INITIALIZE_SPELL_LISTS END
+        COPY_EXISTING_REGEXP GLOB ~SPPR\([1-7]..\).spl$~ ~override/V1WI\1.spl~
+            WRITE_BYTE 0x1c 1 //make Wizard spell
+            SPRINT $allSpells(~%SOURCE_RES%~) ~%DEST_RES%~
+        BUT_ONLY
+
+        //Get list of hidden spells
+        COPY_EXISTING ~HIDESPL.2DA~ ~override~
+            COUNT_2DA_COLS cols
+            READ_2DA_ENTRIES_NOW rows cols
+            FOR (row = 1; row < rows; ++row) BEGIN
+                READ_2DA_ENTRY_FORMER rows row 0 ~spell_res~
+                PATCH_IF !(~%spell_res%~ STRING_CONTAINS_REGEXP ~SPPR~) BEGIN
+                    SPRINT $badSpells(~%spell_res%~) ~%delete%~
+                END
+            END
+        BUT_ONLY
+
+        //Remove unintended spells
+        ACTION_PHP_EACH badSpells AS spell_res => delete BEGIN
+            OUTER_SPRINT spell $allSpells(~%spell_res%~)
+            DELETE ~override/%spell%.spl~
+        END
+
+        //Get list of all wizard spells
+        COPY_EXISTING_REGEXP GLOB ~SPWI....spl$~ ~override~
+            READ_STRREF 0x08 ~WIName~
+            SPRINT $wizSpells(~%SOURCE_RES%~) ~%WIName%~
+        BUT_ONLY
+        
+        //Remove spells already existing on the arcane spell list
+        COPY_EXISTING_REGEXP GLOB ~V1WI....spl$~ ~override~
+            SET exists = 0
+            READ_STRREF 0x08 ~PRName~
+            PHP_EACH wizSpells AS spell => WIName BEGIN
+                PATCH_IF ~%PRName%~ STRING_EQUAL ~%WIName%~ BEGIN
+                    SET exists = 1
+                END
+            END
+            INNER_ACTION BEGIN
+                ACTION_IF exists == 1 BEGIN
+                    DELETE ~override/%SOURCE_RES%.spl~
+                END
+            END
+        BUT_ONLY
+
+        //Tag Cleric True Sight as duplicate
+        LAF RES_NUM_OF_SPELL_NAME
+            STR_VAR spell_name = ~CLERIC_TRUE_SIGHT~
+            RET spell_res
+        END
+        OUTER_SPRINT $dupSpells(~%spell_res%~) ~%delete%~
+        //Clean up remaining duplicates assuming lower numbers should be preserved
+        COPY_EXISTING_REGEXP GLOB ~V1WI....spl$~ ~override~
+            READ_STRREF 0x08 ~V1Name~
+            SPRINT $newSpells(~%SOURCE_RES%~) ~%V1Name%~
+        BUT_ONLY
+        COPY_EXISTING_REGEXP GLOB ~V1WI....spl$~ ~override~
+            SET exists = 0
+            READ_STRREF 0x08 ~V1Name~
+            PHP_EACH newSpells AS spell => check BEGIN
+                PATCH_IF ~%V1Name%~ STRING_EQUAL ~%check%~ BEGIN
+                    SET exists += 1
+                    PATCH_IF exists == 1 BEGIN
+                        SPRINT $newSpells(~%SOURCE_RES%~) ~~
+                    END
+                    PATCH_IF exists > 1 BEGIN
+                        SPRINT $dupSpells(~%spell%~) ~%delete%~
+                    END
+                END
+            END
+        BUT_ONLY
+        ACTION_PHP_EACH dupSpells AS spell => delete BEGIN
+            //PRINT ~%spell%~
+            DELETE ~override/%spell%.spl~
+        END
+
+        //Get final list of all new spells
+        COPY_EXISTING_REGEXP GLOB ~V1WI\([1-7]..\).spl$~ ~%MOD_FOLDER%/SPPR\1.spl~ //no change
+            SPRINT $finSpells(~%SOURCE_RES%~) ~%DEST_RES%~
+        BUT_ONLY
+
+        //Make all new spells cast the original spells for maximum compatibility
+        ACTION_PHP_EACH finSpells AS spell => original BEGIN
+            COPY_EXISTING ~%spell%.spl~ ~override~
+                //Remove all but one spell level
+                FOR (level = 2; level <= 50; ++level) BEGIN
+                    LPF DELETE_SPELL_HEADER INT_VAR header_type = "-1" min_level = %level% END
+                END
+                //Get required spell ability information
+                GET_OFFSET_ARRAY abilities SPL_V10_HEADERS
+                PHP_EACH abilities AS ability=>extended BEGIN
+                    READ_SHORT (extended + 0x0c) spellTarget
+                    READ_SHORT (extended + 0x26) spellProjectile
+                    WRITE_SHORT (extended + 0x26) 1 // Remove projectile
+                END
+                //Remove all original spell effects
+                LPF DELETE_SPELL_EFFECT INT_VAR opcode_to_delete = "-1" END
+                //Add cast of original spell effect
+                PATCH_IF spellTarget = 4 BEGIN // Any point within range
+                    LPF ADD_SPELL_EFFECT INT_VAR opcode = 148 target = 1 timing = 1 parameter1 = 0 parameter2 = 1 STR_VAR resource = ~%original%~ END //timing =1?
+                END ELSE BEGIN // any other target
+                    PATCH_IF spellTarget = 5 BEGIN //Caster
+                        PATCH_IF spellProjectile > 1 BEGIN //Has projectile originating from caster
+                            LPF ADD_SPELL_EFFECT INT_VAR opcode = 148 target = 1 timing = 1 parameter1 = 0 parameter2 = 1 STR_VAR resource = ~%original%~ END //timing =1?
+                        END ELSE BEGIN
+                            LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 target = 2 timing = 1 parameter1 = 0 parameter2 = 1 STR_VAR resource = ~%original%~ END //timing =1?
+                        END
+                    END ELSE BEGIN // Any other target
+                        LPF ADD_SPELL_EFFECT INT_VAR opcode = 146 target = 2 timing = 1 parameter1 = 0 parameter2 = 1 STR_VAR resource = ~%original%~ END //timing =1?
+                    END
+                END
+            BUT_ONLY
+        END
+
+    END//WITH_TRA
+
+// ================================================== ================================================== ================================================== //
+
+BEGIN @200 DESIGNATED 200//Divine Soul
+LABEL V1_DIVINE_SOUL
+REQUIRE_COMPONENT "setup-SCI-Divine-Soul.tp2" 100 @201
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PS-setup.tra"
+    BEGIN//WITH_TRA
+
+        //Get list of all new spells and check for IWD spell
+        OUTER_SET iwd = 0
+        COPY_EXISTING_REGEXP GLOB ~V1WI\([1-7]..\).spl$~ ~%MOD_FOLDER%/SPPR\1.spl~ //no change
+            FOR (id = 100; id < 1000; ++id) BEGIN
+                PATCH_IF iwd == 0 && !(~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~%id%~) BEGIN
+                    LOOKUP_IDS_SYMBOL_OF_INT symbol spell ~1%id%~
+                    PATCH_IF !(~%symbol%~ STRING_CONTAINS_REGEXP ~CLERIC_CURSE~) BEGIN
+                        SET iwd = 1
+                    END
+                END
+            END
+            SPRINT $divSpells(~%DEST_RES%~) ~%SOURCE_RES%~
+        BUT_ONLY
+
+        //Create empowered cure spells for Divine Soul
+        COPY_EXISTING_REGEXP GLOB ~SPPR\(...\).spl$~ ~override/V1DS\1.spl~
+            PATCH_IF VARIABLE_IS_SET $divSpells(~%SOURCE_RES%~) BEGIN
+                SET empowered = 0
+                FOR (id = 100; id < 1000; ++id) BEGIN
+                    PATCH_IF !(~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~%id%~) BEGIN
+                        LOOKUP_IDS_SYMBOL_OF_INT symbol spell ~1%id%~
+                        PATCH_IF !(~%symbol%~ STRING_CONTAINS_REGEXP ~CURE~) BEGIN //target only cure type spells
+                            READ_LONG 0x34 level
+                            //Get all spell ability extended headers
+                            GET_OFFSET_ARRAY abilities SPL_V10_HEADERS
+                            PHP_EACH abilities AS ability=>extended BEGIN
+                                //Get all spell effects feature blocks
+                                GET_OFFSET_ARRAY2 effects extended SPL_V10_HEAD_EFFECTS
+                                PHP_EACH effects AS effect=>feature BEGIN
+                                    PATCH_IF (SHORT_AT feature + 0x00) = 17 BEGIN //heal type
+                                        SET empowered += 1
+                                        WRITE_BYTE 0x1c 1 //make Wizard spell
+                                        READ_LONG (feature + 0x1c) oldDice
+                                        PATCH_IF oldDice = 1 BEGIN
+                                            READ_LONG (feature + 0x20) oldSize
+                                            WRITE_LONG (feature + 0x20) (THIS / 2) //reduce maximum healing by level
+                                            READ_LONG (feature + 0x20) newSize
+                                            WRITE_LONG (feature + 0x1c) (THIS + 1)
+                                            READ_LONG (feature + 0x1c) newDice
+                                        END ELSE BEGIN
+                                            READ_LONG (feature + 0x04) oldValue
+                                            WRITE_LONG (feature + 0x04) (THIS + level) //increase flat healing by level
+                                            READ_LONG (feature + 0x04) newValue
+                                        END
+                                    END
+                                END
+                            END
+                        END
+                    END
+                END
+                PATCH_IF empowered >0 BEGIN
+                    SPRINT empowered @11
+                    READ_STRREF NAME1 ~oldName~
+                    SAY_EVALUATED NAME1 ~%empowered% %oldName%~
+                    READ_STRREF NAME1 ~newName~
+                    READ_STRREF 0x50 ~description~
+                    INNER_PATCH_SAVE description ~%description%~ BEGIN
+                        REPLACE_TEXTUALLY ~%oldName%~ ~%newName%~
+                        PATCH_IF oldDice = 1 BEGIN
+                            REPLACE_TEXTUALLY ~%oldDice%\(.\)%oldSize%~ ~%newDice%\1%newSize%~
+                        END ELSE BEGIN
+                            REPLACE_TEXTUALLY ~%oldValue%~ ~%newValue%~
+                        END
+                    END
+                    SAY_EVALUATED 0x50 ~%description%~ //Spell description
+                    SPRINT $cureSpells($divSpells(~%SOURCE_RES%~)) ~%DEST_RES%~
+                END
+            END
+        BUT_ONLY
+
+        //Create files for spell selection innate
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IA_DS.cre~ ~override~
+            SAY NAME1 @0
+            SAY NAME2 @0
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IA_DS.spl~ ~override~
+            SAY NAME1 @6
+            PATCH_IF iwd == 1 BEGIN
+                SAY UNIDENTIFIED_DESC @8
+            END ELSE BEGIN
+                SAY UNIDENTIFIED_DESC @7
+            END
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1IAXDS.spl~ ~override~
+
+        //Add selection dialog to pick initial bonus spell
+        LAF RES_NUM_OF_SPELL_NAME
+            STR_VAR spell_name = ~CLERIC_REMOVE_FEAR~
+            RET spell_res
+        END
+        OUTER_SPRINT INSERT_GOOD_SPELL $divSpells(~%spell_res%~)
+        COPY_EXISTING ~V1IAXDS.spl~ ~override/V1IAGDS.spl~
+            LPF ADD_SPELL_EFFECT INT_VAR opcode = 171 target = 2 timing = 9 STR_VAR resource = $divSpells(~%spell_res%~) END //Remove Fear
+        LAF RES_NUM_OF_SPELL_NAME
+            STR_VAR spell_name = ~CLERIC_BLESS~
+            RET spell_res
+        END
+        OUTER_SPRINT INSERT_LAW_SPELL $divSpells(~%spell_res%~)
+        COPY_EXISTING ~V1IAXDS.spl~ ~override/V1IALDS.spl~
+            LPF ADD_SPELL_EFFECT INT_VAR opcode = 171 target = 2 timing = 9 STR_VAR resource = $divSpells(~%spell_res%~) END //Bless
+        LAF RES_NUM_OF_SPELL_NAME
+            STR_VAR spell_name = ~CLERIC_SANCTUARY~
+            RET spell_res
+        END
+        OUTER_SPRINT INSERT_NEUTRAL_SPELL $divSpells(~%spell_res%~)
+        COPY_EXISTING ~V1IAXDS.spl~ ~override/V1IANDS.spl~
+            LPF ADD_SPELL_EFFECT INT_VAR opcode = 171 target = 2 timing = 9 STR_VAR resource = $divSpells(~%spell_res%~) END //Sanctuary
+        ACTION_IF iwd == 1 BEGIN
+            OUTER_SPRINT chaosSpell ~CLERIC_CURSE~
+        END ELSE BEGIN
+            OUTER_SPRINT chaosSpell ~CLERIC_COMMAND~
+        END
+        LAF RES_NUM_OF_SPELL_NAME
+            STR_VAR spell_name = ~%chaosSpell%~
+            RET spell_res
+        END
+        OUTER_SPRINT INSERT_CHAOS_SPELL $divSpells(~%spell_res%~)
+        COPY_EXISTING ~V1IAXDS.spl~ ~override/V1IACDS.spl~
+            LPF ADD_SPELL_EFFECT INT_VAR opcode = 171 target = 2 timing = 9 STR_VAR resource = $divSpells(~%spell_res%~) END //Curse / Command
+        LAF RES_NUM_OF_SPELL_NAME
+            STR_VAR spell_name = ~CLERIC_DOOM~
+            RET spell_res
+        END
+        OUTER_SPRINT INSERT_EVIL_SPELL $divSpells(~%spell_res%~)
+        COPY_EXISTING ~V1IAXDS.spl~ ~override/V1IAEDS.spl~
+            LPF ADD_SPELL_EFFECT INT_VAR opcode = 171 target = 2 timing = 9 STR_VAR resource = $divSpells(~%spell_res%~) END //Doom
+        COMPILE EVALUATE_BUFFER ~%MOD_FOLDER%/data/V1IA_DS.d~ ~override~
+        COMPILE ~%MOD_FOLDER%/data/V1IA_DS.baf~ ~override~
+
+        //Create file for Luck innate
+        LAF RES_NUM_OF_SPELL_NAME
+            STR_VAR spell_name = ~WIZARD_LUCK~
+            RET spell_res
+        END
+        COPY_EXISTING ~%spell_res%.spl~ ~override/V1IA_FG.spl~
+            SPRINT newName @9
+            READ_STRREF NAME1 ~oldName~
+            SAY_EVALUATED NAME1 ~%newName%~
+            READ_STRREF 0x50 ~description~
+            INNER_PATCH_SAVE description ~%description%~ BEGIN
+			  REPLACE_TEXTUALLY ~%oldName%
+.*
+.*
+.*
+.*
+.*
+.*
+.*
+.*~ ~%newName%~
+			END
+            SAY_EVALUATED 0x50 ~%description%~ //Spell description
+            WRITE_BYTE 0x1c 4 //Innate
+            WRITE_BYTE 0x34 1 //Spell level
+            WRITE_BYTE 0x0d 2 //Cannot be dispelled
+            WRITE_BYTE 0x1b 0b00000010 //Ignor silence
+            WRITE_BYTE 0x19 0b01000000 //Ignor wild/dead magic
+            LPF ALTER_SPELL_HEADER INT_VAR location = 4 target = 5 speed = 1 END//Innate ability, Caster only
+
+        //Create file for spell slot penalty
+        ACTION_IF !(FILE_EXISTS_IN_GAME ~V1PA_SP.spl~) BEGIN
+            COPY_EXISTING ~%MOD_FOLDER%/data/V1PA_SP.spl~ ~override~
+        END
+
+        //Create dummy Mage class table if not existing
+        ACTION_IF !(FILE_EXISTS_IN_GAME ~CLABMA01.2DA~) BEGIN
+            COPY_EXISTING ~%MOD_FOLDER%/data/CLABMA01.2DA~ ~override/CLABMA01.2DA~
+        END
+        //Apply Divine Soul abilities
+        COPY_EXISTING ~CLABMA01.2DA~ ~override/V1CLAB01.2DA~
+        APPEND "V1CLAB01.2DA" ~DIVSOURCE   GA_V1IA_DS  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1IA_DS~
+        APPEND "V1CLAB01.2DA" ~GODSFAVOR   GA_V1IA_FG  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1IA_FG~
+        APPEND "V1CLAB01.2DA" ~SPPENALTY   AP_V1PA_SP  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1PA_SP~
+
+        //Create Divine Soul as Sorcerer kit
+        LAF ADD_KIT_EX
+            INT_VAR
+                kit_class   = 19 // Sorcerer
+                visible     = 1 // Character creation
+                mixed       = RESOLVE_STR_REF (@1) // Name
+                lower       = RESOLVE_STR_REF (@12) // Name
+                help        = RESOLVE_STR_REF (@2) // Description
+            STR_VAR
+                clab_path   = ~V1CLAB01.2DA~
+                kit_name    = ~V1_DivineSoul~
+                clascolr    = ~172 176 151 204 177~
+            RET
+                kit_id
+        END
+
+        //Add cleric spells as arcane spells for Divine Soul
+        COPY_EXISTING_REGEXP GLOB ~V1WI....spl$~ ~override~
+            READ_BYTE 0x21 exclusion
+            PATCH_IF ((%exclusion% BOR 0b10111111) = 0b10111111) BEGIN //exclude Druid/Ranger spells
+                INNER_ACTION BEGIN
+                    OUTER_SPRINT target ~%SOURCE_RES%~
+                    ACTION_PHP_EACH cureSpells AS oldTarget => newTarget BEGIN
+                        ACTION_IF ~%target%~ STRING_EQUAL ~%oldTarget%~ BEGIN
+                            OUTER_SPRINT target ~%newTarget%~
+                        END
+                    END
+                    LAF ADD_CLASS_SPELL STR_VAR resref=~%target%~ kit_include=~{'V1_DivineSoul', }~ END
+                END
+            END
+        BUT_ONLY
+
+    END//WITH_TRA
+
+// ================================================== ================================================== ================================================== //
+
+BEGIN @300 DESIGNATED 300//Primordial Spirit
+LABEL V1_PRIMORDIAL_SPIRIT
+REQUIRE_COMPONENT "setup-SCI-Divine-Soul.tp2" 100 @301
+
+    WITH_TRA
+        "%MOD_FOLDER%/lang/%LANGUAGE%/SCI-PS-setup.tra"
+    BEGIN//WITH_TRA
+
+        //Get list of all new spells and check for IWD spell
+        OUTER_SET iwd = 0
+        COPY_EXISTING_REGEXP GLOB ~V1WI\([1-7]..\).spl$~ ~%MOD_FOLDER%/SPPR\1.spl~ //no change
+            FOR (id = 100; id < 1000; ++id) BEGIN
+                PATCH_IF !(~%SOURCE_RES%~ STRING_CONTAINS_REGEXP ~%id%~) BEGIN
+                    LOOKUP_IDS_SYMBOL_OF_INT symbol spell ~1%id%~
+                    PATCH_IF !(~%symbol%~ STRING_CONTAINS_REGEXP ~CLERIC_ENTANGLE~) BEGIN
+                        SPRINT $natSpells(~%DEST_RES%~) ~%SOURCE_RES%~
+                    END
+                    PATCH_IF !(~%symbol%~ STRING_CONTAINS_REGEXP ~CLERIC_SPIKE_GROWTH~) BEGIN
+                        SET iwd = 1
+                        SPRINT $natSpells(~%DEST_RES%~) ~%SOURCE_RES%~
+                    END
+                    /*
+                    PATCH_IF !(~%symbol%~ STRING_CONTAINS_REGEXP ~CLERIC_SPIKE_STONES~) BEGIN
+                        SET iwd = 1
+                        SPRINT $natSpells(~%DEST_RES%~) ~%SOURCE_RES%~
+                    END
+                    */
+                END
+            END
+        BUT_ONLY
+        LAF RES_NUM_OF_SPELL_NAME
+            STR_VAR spell_name = ~CLERIC_ENTANGLE~
+            RET spell_res
+        END
+        OUTER_SPRINT entangle $natSpells(~%spell_res%~)
+
+        //Create vine immunity for Primordial Spirit
+        COPY_EXISTING ~%MOD_FOLDER%/data/V1PA_PS.spl~ ~override~
+        COPY_EXISTING_REGEXP GLOB ~^.+\.spl$~ ~override~
+            //Get all spell ability extended headers
+            SET entangleType = 0
+            GET_OFFSET_ARRAY abilities SPL_V10_HEADERS
+            PHP_EACH abilities AS ability=>extended BEGIN
+                //Get all spell effects feature blocks
+                GET_OFFSET_ARRAY2 effects extended SPL_V10_HEAD_EFFECTS
+                PHP_EACH effects AS effect=>feature BEGIN
+                    PATCH_IF (SHORT_AT feature + 0x00) = 154 BEGIN //Entangle type
+                        SET entangleType = 1
+                    END
+                END
+            END
+            INNER_ACTION BEGIN
+                ACTION_IF entangleType == 1 BEGIN //Entangle type
+                    OUTER_SPRINT vines ~%SOURCE_RES%~
+                    COPY_EXISTING ~V1PA_PS.spl~ ~override~
+                        LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 target = 1 timing = 9 STR_VAR resource = ~%vines%~ END
+                END
+            END
+        BUT_ONLY
+        ACTION_IF iwd == 1 BEGIN
+            LAF RES_NUM_OF_SPELL_NAME
+                STR_VAR spell_name = ~CLERIC_SPIKE_GROWTH~
+                RET spell_res
+            END
+            COPY_EXISTING ~V1PA_PS.spl~ ~override~
+                LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 target = 1 timing = 9 STR_VAR resource = ~%spell_res%~ END
+                SPRINT spell_res $natSpells(~%spell_res%~)
+                LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 target = 1 timing = 9 STR_VAR resource = ~%spell_res%~ END
+            BUT_ONLY
+            /*
+            LAF RES_NUM_OF_SPELL_NAME
+                STR_VAR spell_name = ~CLERIC_SPIKE_STONES~
+                RET spell_res
+            END
+            COPY_EXISTING ~V1PA_PS.spl~ ~override~
+                LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 target = 1 timing = 9 STR_VAR resource = ~%spell_res%~ END
+                SPRINT spell_res $natSpells(~%spell_res%~)
+                LPF ADD_SPELL_EFFECT INT_VAR opcode = 206 target = 1 timing = 9 STR_VAR resource = ~%spell_res%~ END
+            BUT_ONLY
+            */
+        END
+
+        //Create file for Vocalize innate
+        LAF RES_NUM_OF_SPELL_NAME
+            STR_VAR spell_name = ~WIZARD_VOCALIZE~
+            RET spell_res
+        END
+        COPY_EXISTING ~%spell_res%.spl~ ~override/V1IA_VA.spl~
+            SPRINT newName @10
+            READ_STRREF NAME1 ~oldName~
+            SAY_EVALUATED NAME1 ~%newName%~
+            READ_STRREF 0x50 ~description~
+            INNER_PATCH_SAVE description ~%description%~ BEGIN
+			  REPLACE_TEXTUALLY ~%oldName%
+.*
+.*
+.*
+.*
+.*
+.*
+.*
+.*~ ~%newName%~
+			END
+            SAY_EVALUATED 0x50 ~%description%~ //Spell description
+            WRITE_BYTE 0x1c 4 //Innate
+            WRITE_BYTE 0x34 1 //Spell level
+            WRITE_BYTE 0x0d 2 //Cannot be dispelled
+            WRITE_BYTE 0x1b 0b00000010 //Ignor silence
+            WRITE_BYTE 0x19 0b01000000 //Ignor wild/dead magic
+            LPF ALTER_SPELL_HEADER INT_VAR location = 4 target = 5 speed = 1 END//Innate ability, Caster only
+
+        //Create file for spell slot penalty
+        ACTION_IF !(FILE_EXISTS_IN_GAME ~V1PA_SP.spl~) BEGIN
+            COPY_EXISTING ~%MOD_FOLDER%/data/V1PA_SP.spl~ ~override~
+        END
+
+        //Create dummy Mage class table if not existing
+        ACTION_IF !(FILE_EXISTS_IN_GAME ~CLABMA01.2DA~) BEGIN
+            COPY_EXISTING ~%MOD_FOLDER%/data/CLABMA01.2DA~ ~override/CLABMA01.2DA~
+        END
+        //Apply Primordial Spirit abilities
+        COPY_EXISTING ~CLABMA01.2DA~ ~override/V1CLAB02.2DA~
+        APPEND "V1CLAB02.2DA" ~ANCIENTV    GA_V1IA_VA  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1IA_VA~
+        APPEND "V1CLAB02.2DA" ~ENTANGLE    GA_%entangle%  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1WI105~
+        APPEND "V1CLAB02.2DA" ~IMMUNITY    AP_V1PA_PS  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1PA_PS~
+        APPEND "V1CLAB02.2DA" ~SPPENALTY   AP_V1PA_SP  ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****        ****~
+        UNLESS ~V1PA_SP~
+
+        //Create Primordial Spirit as Sorcerer kit
+        ACTION_IF iwd == 1 BEGIN
+            LAF ADD_KIT_EX
+                INT_VAR
+                    kit_class   = 19 // Sorcerer
+                    visible     = 1 // Character creation
+                    mixed       = RESOLVE_STR_REF (@3) // Name
+                    lower       = RESOLVE_STR_REF (@13) // Name
+                    help        = RESOLVE_STR_REF (@5) // Description
+                STR_VAR
+                    clab_path   = ~V1CLAB02.2DA~
+                    kit_name    = ~V1_PrimordialSpirit~
+                    alignmnt    = ~0 1 0 1 1 1 0 1 0~
+                    clascolr    = ~250 210 193 211 147~
+                RET
+                    kit_id
+            END
+        END ELSE BEGIN
+            LAF ADD_KIT_EX
+                INT_VAR
+                    kit_class   = 19 // Sorcerer
+                    visible     = 1 // Character creation
+                    mixed       = RESOLVE_STR_REF (@3) // Name
+                    lower       = RESOLVE_STR_REF (@13) // Name
+                    help        = RESOLVE_STR_REF (@4) // Description
+                STR_VAR
+                    clab_path   = ~V1CLAB02.2DA~
+                    kit_name    = ~V1_PrimordialSpirit~
+                    alignmnt    = ~0 1 0 1 1 1 0 1 0~
+                    clascolr    = ~250 210 193 211 147~
+                RET
+                    kit_id
+            END
+        END
+        
+        //Add cleric spells as arcane spells for Primordial Spirit
+        COPY_EXISTING_REGEXP GLOB ~V1WI....spl$~ ~override~
+            READ_BYTE 0x21 exclusion
+            PATCH_IF ((%exclusion% BOR 0b01111111) = 0b01111111) BEGIN //exclude Cleric/Paladin spells
+                SET exists = 0
+                PATCH_IF ~%SOURCE_RES%~ STRING_EQUAL ~%entangle%~ BEGIN//exclude naturally learned Entangle
+                    SET exists = 1
+                END
+                INNER_ACTION BEGIN
+                    ACTION_IF exists == 0 BEGIN
+                        LAF ADD_CLASS_SPELL STR_VAR resref=~%SOURCE_RES%~ kit_include=~{'V1_PrimordialSpirit', }~ END
+                    END
+                END
+            END
+        BUT_ONLY
+
+    END//WITH_TRA

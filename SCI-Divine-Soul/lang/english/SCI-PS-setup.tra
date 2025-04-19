@@ -1,0 +1,87 @@
+@0=~Divine Spark~
+@1=~Divine Soul~
+@2=~DIVINE SOUL: Divine Souls are blessed with the innate magic of a Sorcerer coming from a divine source that glimmers within the soul. This can be a distant but powerful familial connection to a divine being, be it in blood or by an ancient prophecy making them chosen vessels of divine magic.
+
+Advantages:
+– May learn divine spells from the Cleric spell list as additional arcane spells.
+– May heal one more hit point per spell level with any cure spell.
+– May use Favored by the Gods as per the Luck spell only on <PRO_HIMHER>self once per day.
+– May use Divine Affinity once to attune the alignment of <PRO_HISHER> divine source and gain one additional corresponding level one spell.
+
+Disadvantage:
+– May cast one fewer spell per level per day.~
+@3=~Primordial Spirit~
+@4=~PRIMORDIAL SPIRIT: Primordial Spirits posses a spiritual bond to the land itself from which they are allowed to draw their innate magic. Some belief them to be ancient spirits walking the world for the first time. Certainly not wiser for it than others, they typically express a more balanced temperament.
+
+Advantages:
+– May learn divine spells from the Druid spell list as additional arcane spells.
+– May use Voice of the Ancients as per the Vocalize spell once per day.
+– The Entangle spell is added to <PRO_HISHER> known spells as an arcane spell.
+– Immune to the effects of the Entangle spell.
+
+Disadvantage:
+– May cast one fewer spell per level per day.
+– Alignment restricted to be at least partially neutral.~
+@5=~PRIMORDIAL SPIRIT: Primordial Spirits posses a spiritual bond to the land itself from which they are allowed to draw their innate magic. Some belief them to be ancient spirits walking the world for the first time. Certainly not wiser for it than others, they typically express a more balanced temperament.
+
+Advantages:
+– May learn divine spells from the Druid spell list as additional arcane spells.
+– May use Voice of the Ancients as per the Vocalize spell once per day.
+– The Entangle spell is added to <PRO_HISHER> known spells as an arcane spell.
+– Immune to the effects of the Entangle and Spike Growth spells.
+
+Disadvantage:
+– May cast one fewer spell per level per day.
+– Alignment restricted to be at least partially neutral.~
+@6=~Divine Affinity~
+@7=~Divine Affinity
+
+The Divine Soul may attune the source of <PRO_HISHER> divine magic with <PRO_HISHER> alignment to learn an additional spell which does not count towards the limit of known spells.
+
+Good: Remove Fear
+Law: Bless
+Neutral: Sanctuary
+Chaos: Command
+Evil: Doom~
+@8=~Divine Affinity
+
+The Divine Soul may attune the source of <PRO_HISHER> divine magic with <PRO_HISHER> alignment and learn an additional spell which does not count towards the limit of known spells.
+
+Good: Remove Fear
+Law: Bless
+Neutral: Sanctuary
+Chaos: Curse
+Evil: Doom~
+
+@9=~Favored by the Gods~
+@10=~Voice of the Ancients~
+@11=~Empowered~
+@12=~divine soul~
+@13=~primordial spirit~
+
+@20=~*You glimpse into the divine source within your soul. If properly aligned with your believes you may gain further insights to channel its power.*~
+@21=~I wish to become an embodiment of goodness.~
+@22=~I wish to become an embodiment of order.~
+@23=~I wish to become an embodiment of neutrality.~
+@24=~I wish to become an embodiment of chaos.~
+@25=~I wish to become an embodiment of evil.~
+
+@30=~*Just for a moment you seem to hear a heavenly melody as you focus.*~
+@31=~I can feel my personal ambitions being dissolved by goodness.~
+
+@40=~*Just for a moment you seem to hear a rhythmic melody as you focus.*~
+@41=~I can feel the convolutions of my brain restructuring in order.~
+
+@50=~*Just for a moment you seem to hear a serene melody as you focus.*~
+@51=~I can feel my mind accepting the tranquility of true neutrality.~
+
+@60=~*Just for a moment you seem to hear a dissonant melody as you focus.*~
+@61=~I can feel the chaos tremble through my veins.~
+
+@70=~*Just for a moment you seem to hear an oppressive melody as you focus.*~
+@71=~I can feel my heart being drowned in evil.~
+
+@81=~I now realize that I am already perfectly aligned.*~
+@82=~I am already what I wanted to become.~
+
+@90=~*Your senses return to the world around you.*~
